@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".activities.Home">
+
+    <item
+        android:id="@+id/golfPoiFragment"
+        android:icon="@android:drawable/ic_menu_add"
+        android:title="@string/menu_addGolfPOI"
+        android:orderInCategory="100"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/golfPoisOverviewMapFragment"
+        android:title="@string/menu_mapGolfPOI"
+        android:orderInCategory="120"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/golfPoiUserFilter"
+        android:title="My Golf Courses"
+        android:orderInCategory="160"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/golfPoiListFragment"
+        android:title="All Golf Courses"
+        android:orderInCategory="170"
+        app:showAsAction="never"/>
+
+    <item
+        android:id="@+id/golfPoiSearch"
+        android:icon="@android:drawable/ic_menu_search"
+        android:title=""
+        android:orderInCategory="200"
+        app:actionViewClass="android.widget.SearchView"
+        app:showAsAction="collapseActionView|ifRoom"/>
+
+    <item
+        android:id="@+id/golfLoginFragment"
+        android:title="@string/menu_logoutGolfPOI"
+        android:orderInCategory="250"
+        app:showAsAction="never"/>
+</menu>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
+    android:elevation="24dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+        <ImageView
+            android:id="@+id/imageIcon"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentTop="true"
+            android:layout_marginEnd="16dp"
+            app:srcCompat="@mipmap/ic_launcher_round"
+            android:contentDescription="@string/app_name" />
+
+        <TextView
+            android:id="@+id/golfPOITitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@+id/imageIcon"
+            android:textSize="30sp"
+            tools:text="Course Title" />
+
+        <TextView
+            android:id="@+id/golfPOIProvince"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/golfPOITitle"
+            android:layout_toEndOf="@+id/imageIcon"
+            android:textSize="20sp"
+            tools:text="Course Province" />
+
+        <TextView
+            android:id="@+id/golfPOIPar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/golfPOITitle"
+            android:layout_toEndOf="@+id/golfPOIProvince"
+            android:textSize="20sp"
+            tools:text="Par 72" />
+
+        <TextView
+            android:id="@+id/golfPOIDesc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/golfPOIProvince"
+            android:layout_toEndOf="@+id/imageIcon"
+            tools:text="Course Description" />
+
+    </RelativeLayout>
+</androidx.cardview.widget.CardView>
