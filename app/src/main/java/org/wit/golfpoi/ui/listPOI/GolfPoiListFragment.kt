@@ -10,6 +10,8 @@ import android.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.NavigationUI
@@ -32,6 +34,7 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
     private var _fragBinding: FragmentGolfPoiListBinding? = null
     private val fragBinding get() = _fragBinding!!
     private var searchView: SearchView? = null
+    private lateinit var golfPoiListViewModel: GolfPoiListViewModel
 
     // When the Fragment is created
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,6 +56,12 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
         fragBinding.recyclerView.setLayoutManager(LinearLayoutManager(activity))
         loadGolfPOIs()
 
+        golfPoiListViewModel = ViewModelProvider(this).get(GolfPoiListViewModel::class.java)
+        golfPoiListViewModel.observableGolfPOIs.observe(viewLifecycleOwner, Observer {
+                golfPOIs ->
+            golfPOIs?.let { render(golfPOIs) }
+        })
+
         setRecyclerViewItemTouchListener(fragBinding)
         registerRefreshCallback(fragBinding)
 
@@ -73,6 +82,12 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
                 arguments = Bundle().apply {}
             }
     }
+
+    // Render the data
+    private fun render(golfPOIs: List<GolfPOIModel>) {
+        fragBinding.recyclerView.adapter = GolfPOIAdapter(golfPOIs,this)
+    }
+
 
     // Handle the click of the Add button to trigger navigation and send the data
     override fun onGolfPOIClick(golfPOI: GolfPOIModel) {
