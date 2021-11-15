@@ -6,7 +6,6 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.*
 import android.widget.SearchView
-import android.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -20,6 +19,7 @@ import org.wit.golfpoi.R
 import org.wit.golfpoi.adapter.GolfPOIAdapter
 import org.wit.golfpoi.adapter.GolfPOIListener
 import org.wit.golfpoi.databinding.FragmentGolfPoiListBinding
+import org.wit.golfpoi.helpers.SwipeToDeleteCallback
 import org.wit.golfpoi.main.MainApp
 import org.wit.golfpoi.models.GolfPOIModel
 import timber.log.Timber.i
@@ -52,7 +52,24 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
         fragBinding.recyclerView.setLayoutManager(LinearLayoutManager(activity))
         loadGolfPOIs()
 
-        setRecyclerViewItemTouchListener(fragBinding)
+        val swipeDeleteHandler = object : SwipeToDeleteCallback(requireContext()) {
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+
+                val position = viewHolder.adapterPosition
+                i("Deleting Item At position $position")
+
+                // remove from the recyclerview
+                val adapter = fragBinding.recyclerView.adapter as GolfPOIAdapter
+                adapter.removeAt(viewHolder.adapterPosition)
+
+                // Delete from the data source
+                app.golfPOIData.removePOI(position)
+                fragBinding.recyclerView.adapter?.notifyItemRemoved(position)
+            }
+        }
+        val itemTouchDeleteHelper = ItemTouchHelper(swipeDeleteHandler)
+        itemTouchDeleteHelper.attachToRecyclerView(fragBinding.recyclerView)
+
         registerRefreshCallback(fragBinding)
 
         return root
@@ -120,35 +137,6 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
         }
     }
 
-    // Method to handle deleting an item with a swipe
-    private fun setRecyclerViewItemTouchListener(layout:  FragmentGolfPoiListBinding) {
-
-        // Create the callback and tell it what events to listen for
-        val itemTouchCallback = object : ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT or ItemTouchHelper.RIGHT) {
-
-            override fun onMove(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder, viewHolder1: RecyclerView.ViewHolder): Boolean {
-                // Return false in onMove. You don’t want to perform any special behavior here
-                return false
-            }
-
-            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, swipeDir: Int) {
-                // Call onSwiped when you swipe an item in the direction specified in the ItemTouchHelper.
-                // Here, you request the viewHolder parameter passed for the position of the item view,
-                // and then you remove that item from your list of photos.
-                // Finally, you inform the RecyclerView adapter that an item has been removed at a specific position
-                val position = viewHolder.adapterPosition
-                i("Deleting Item At position $position")
-                app.golfPOIData.removePOI(position)
-                //photosList.removeAt(position)
-                layout.recyclerView.adapter!!.notifyItemRemoved(position)
-            }
-        }
-
-        //4
-        val itemTouchHelper = ItemTouchHelper(itemTouchCallback)
-        itemTouchHelper.attachToRecyclerView(layout.recyclerView)
-    }
-
     // Register the Callback Function to refresh the recycler
     private fun registerRefreshCallback(layout: FragmentGolfPoiListBinding) {
         refreshIntentLauncher =
@@ -158,12 +146,12 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
 
     // Load Golf courses function
     private fun loadGolfPOIs() {
-        showGolfPOIs(app.golfPOIData.findAllPOIs())
+        showGolfPOIs(ArrayList(app.golfPOIData.findAllPOIs()))
     }
 
     // Load Golf course which were created by the current user
     private fun loadGolfPOIs(id: Long) {
-        var userFilteredCourses = app.golfPOIData.findByCreatedByUserId(id)
+        var userFilteredCourses = ArrayList(app.golfPOIData.findByCreatedByUserId(id))
         showGolfPOIs(userFilteredCourses)
     }
 
@@ -172,9 +160,9 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
         if (query != "") {
             var allGolfCourse = app.golfPOIData.findAllPOIs()
             i("allCoursesLength: ${allGolfCourse.size}")
-            var searchResults = allGolfCourse.filter { it.courseTitle.lowercase().contains(query.lowercase()) ||
+            var searchResults = ArrayList(allGolfCourse.filter { it.courseTitle.lowercase().contains(query.lowercase()) ||
                                                        it.courseDescription.lowercase().contains(query.lowercase()) ||
-                                                       it.courseProvince.lowercase().contains(query.lowercase())}
+                                                       it.courseProvince.lowercase().contains(query.lowercase())})
             i("searchResultsLength: ${searchResults.size}")
             showGolfPOIs(searchResults)
         } else {
@@ -183,7 +171,7 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
     }
 
     // Bind data to adapter recycler view.
-    fun showGolfPOIs (golfPOIs: List<GolfPOIModel>) {
+    fun showGolfPOIs (golfPOIs: ArrayList<GolfPOIModel>) {
         fragBinding.recyclerView.adapter = GolfPOIAdapter(golfPOIs, this)
         fragBinding.recyclerView.adapter?.notifyDataSetChanged()
     }

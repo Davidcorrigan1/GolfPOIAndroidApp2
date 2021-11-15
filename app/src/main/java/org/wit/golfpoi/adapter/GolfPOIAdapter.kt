@@ -17,7 +17,7 @@ interface GolfPOIListener {
 }
 
 
-class GolfPOIAdapter constructor(private var golfPOIs: List<GolfPOIModel>,
+class GolfPOIAdapter constructor(private var golfPOIs: ArrayList<GolfPOIModel>,
                                 private val listener: GolfPOIListener) :
     RecyclerView.Adapter<GolfPOIAdapter.MainHolder>() {
 
@@ -32,6 +32,12 @@ class GolfPOIAdapter constructor(private var golfPOIs: List<GolfPOIModel>,
         val golfPOI = golfPOIs[holder.adapterPosition]
         holder.bind(golfPOI, listener)
     }
+
+    fun removeAt(position: Int) {
+        golfPOIs.removeAt(position)
+        notifyItemRemoved(position)
+    }
+
 
     override fun getItemCount(): Int = golfPOIs.size
 
