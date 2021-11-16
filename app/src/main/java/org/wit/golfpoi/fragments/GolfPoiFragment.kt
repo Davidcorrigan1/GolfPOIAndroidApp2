@@ -59,8 +59,6 @@ class GolfPoiFragment : Fragment() {
             golfPOI = golfPOIBundle.getParcelable("golfPOI")!!
         }
 
-        i("The bundle1: ${golfPOI}")
-
         // creating objects needed for the spinner drop down
         // Dropdown of Provinces taken from the strings resource file
         val provinces = resources.getStringArray(R.array.provinces)

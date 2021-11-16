@@ -32,7 +32,6 @@ class GolfPoiSelectMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMar
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-
     }
 
     override fun onCreateView(
@@ -40,8 +39,6 @@ class GolfPoiSelectMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMar
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-
-
 
         _fragBinding = FragmentGolfPoiSelectMapBinding.inflate(inflater, container, false)
         val root = fragBinding?.root

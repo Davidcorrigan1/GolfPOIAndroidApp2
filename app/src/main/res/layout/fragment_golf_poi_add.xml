@@ -34,48 +34,46 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
-
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/textField"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/hint_golfPOITitle"
-                    app:hintTextAppearance="@style/TextAppearance.App.TextInputLayout"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                    android:hint="Golf Course Name">
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/golfPOITitle"
-                        android:layout_width="match_parent"
-                        android:layout_height="48dp"
-                        android:layout_margin="8dp"
-                        android:inputType="text"
-                        android:maxLength="25"
-                        android:maxLines="1"
-                        android:padding="8dp"
-                        android:textColor="@color/colorAccent"
-                        android:textSize="20sp" />
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/golfPOITitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_margin="8dp"
+                    android:autofillHints="test hint"
+                    android:hint="@string/hint_golfPOITitle"
+                    android:inputType="text"
+                    android:maxLength="25"
+                    android:maxLines="1"
+                    android:padding="8dp"
+                    android:textColor="@color/colorAccent"
+                    android:textSize="20sp" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/textField2"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/colorAccent"
-                    android:hint="@string/hint_golfPOIDesc"
-                    app:hintTextAppearance="@style/TextAppearance.App.TextInputLayout"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+                    android:hint="Golf Course Description">
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/golfPOIDesc"
-                        android:layout_width="match_parent"
-                        android:layout_height="100dp"
-                        android:layout_margin="8dp"
-                        android:inputType="textMultiLine"
-                        android:maxLength="250"
-                        android:maxLines="5"
-                        android:padding="8dp"
-                        android:textColor="@color/colorAccent"
-                        android:textSize="20sp" />
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/golfPOIDesc"
+                    android:layout_width="match_parent"
+                    android:layout_height="100dp"
+                    android:layout_margin="8dp"
+                    android:autofillHints="test hint"
+                    android:hint="@string/hint_golfPOIDesc"
+                    android:inputType="textMultiLine"
+                    android:maxLength="250"
+                    android:maxLines="5"
+                    android:padding="8dp"
+                    android:textColor="@color/colorAccent"
+                    android:textSize="20sp" />
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <LinearLayout

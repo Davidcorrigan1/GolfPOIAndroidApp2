@@ -79,19 +79,40 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
         // Include each map location in the boundsBuilder
         // Create a marker for each golf course with title and desc included.
         val boundsBuilder = LatLngBounds.builder()
-        for (golfPOI in golfPOIs) {
-            if (golfPOI.lat != 0.0 && golfPOI.lng != 0.0) {
-                val latlng = LatLng(golfPOI.lat, golfPOI.lng)
-                boundsBuilder.include(latlng)
-                map.addMarker(
-                    MarkerOptions().position(latlng).title(golfPOI.courseTitle)
-                ).tag = golfPOI.id
+        if (golfPOIs.size > 0) {
+            for (golfPOI in golfPOIs) {
+                if (golfPOI.lat != 0.0 && golfPOI.lng != 0.0) {
+                    val latlng = LatLng(golfPOI.lat, golfPOI.lng)
+                    boundsBuilder.include(latlng)
+                    map.addMarker(
+                        MarkerOptions().position(latlng).title(golfPOI.courseTitle)
+                    ).tag = golfPOI.id
 
+                }
             }
+            // Move the'camera' for that it zooms to show all the Golf Courses
+            map.moveCamera(
+                CameraUpdateFactory.newLatLngBounds(
+                    boundsBuilder.build(),
+                    1000,
+                    1000,
+                    0
+                )
+            )
+            populateMarkerCard(golfPOIs.last().id)
+        } else {
+            val latlng = LatLng(52.490, -6.272)
+            boundsBuilder.include(latlng)
+            map.moveCamera(
+                CameraUpdateFactory.newLatLngBounds(
+                    boundsBuilder.build(),
+                    1000,
+                    1000,
+                    0
+                )
+            )
+
         }
-        // Move the'camera' for that it zooms to show all the Golf Courses
-        map.moveCamera(CameraUpdateFactory.newLatLngBounds(boundsBuilder.build(),1000,1000,0))
-        populateMarkerCard (golfPOIs.last().id)
 
     }
 
