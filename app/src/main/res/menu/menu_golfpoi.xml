@@ -3,6 +3,12 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
+        android:id="@+id/golfPoiSave"
+        android:title="@string/menu_saveGolfPOI"
+        android:orderInCategory="50"
+        app:showAsAction="always"/>
+
+    <item
         android:id="@+id/golfPoiListFragment"
         android:title="@string/menu_cancelGolfPOI"
         android:orderInCategory="100"

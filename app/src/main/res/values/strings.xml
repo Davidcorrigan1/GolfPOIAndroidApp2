@@ -4,6 +4,7 @@
     <string name="hint_golfPOITitle">Golf Course Title</string>
     <string name="hint_golfPOIDesc">Golf Course Description</string>
     <string name="menu_addGolfPOI">Add</string>
+    <string name="menu_saveGolfPOI">Save</string>
     <string name="menu_cancelGolfPOI">Cancel</string>
     <string name="menu_logoutGolfPOI">Logout</string>
     <string name="menu_mapGolfPOI">Map</string>
