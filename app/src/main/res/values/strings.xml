@@ -17,6 +17,10 @@
     <string name="change_golfPOI_image">Change Course image</string>
     <string name="login_email_hint">Email</string>
     <string name="login_password_hint">Password</string>
+    <string name="button_login">LOGIN</string>
+    <string name="button_switch_to_register">need to create account?</string>
+    <string name="button_register">REGISTER</string>
+    <string name="button_switch_to_login">already have account?</string>
     <string name="register_firstname_hint">First Name</string>
     <string name="register_lastname_hint">Last Name</string>
     <string name="button_location">Set Course Location</string>

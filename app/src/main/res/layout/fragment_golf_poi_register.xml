@@ -43,58 +43,82 @@
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/textInputEmail"
-                style="@style/parent"
-                android:layout_marginTop="20dp">
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/login_email_hint"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
-                <EditText
+                <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/editTextEmail"
-                    style="@style/modifiedEditText"
-                    android:hint="@string/login_email_hint"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_margin="10dp"
                     android:inputType="textEmailAddress"
-                    android:textSize="20sp"
-                    android:maxLines="1" />
+                    android:maxLength="25"
+                    android:maxLines="1"
+                    android:padding="10dp"
+                    android:textColor="@color/colorAccent"
+                    android:textSize="20sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/textInputFirstName"
-                style="@style/parent"
-                android:layout_marginTop="20dp">
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/register_firstname_hint"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
-                <EditText
+                <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/editTextFirstName"
-                    style="@style/modifiedEditText"
-                    android:hint="@string/register_firstname_hint"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_margin="10dp"
                     android:inputType="textPersonName"
-                    android:textSize="20sp"
-                    android:maxLines="1" />
+                    android:maxLength="25"
+                    android:maxLines="1"
+                    android:padding="10dp"
+                    android:textColor="@color/colorAccent"
+                    android:textSize="20sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/textInputLastName"
-                style="@style/parent"
-                android:layout_marginTop="20dp">
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/register_lastname_hint"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
-                <EditText
+                <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/editTextLastName"
-                    style="@style/modifiedEditText"
-                    android:hint="@string/register_lastname_hint"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_margin="10dp"
                     android:inputType="textPersonName"
-                    android:textSize="20sp"
-                    android:maxLines="1" />
+                    android:maxLength="25"
+                    android:maxLines="10"
+                    android:padding="10dp"
+                    android:textColor="@color/colorAccent"
+                    android:textSize="20sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/textInputPassword"
-                style="@style/parent"
-                android:layout_marginTop="20dp">
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/login_password_hint"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
-                <EditText
+                <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/editTextPassword"
-                    style="@style/modifiedEditText"
-                    android:hint="@string/login_password_hint"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_margin="10dp"
                     android:inputType="textPassword"
-                    android:textSize="20sp"
-                    android:maxLines="1" />
+                    android:maxLength="25"
+                    android:maxLines="1"
+                    android:padding="10dp"
+                    android:textColor="@color/colorAccent"
+                    android:textSize="20sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
 
@@ -102,11 +126,11 @@
                 android:id="@+id/btnRegister"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="16dp"
+                android:layout_margin="10dp"
                 android:background="@color/colorAccentLight"
-                android:paddingTop="8dp"
-                android:paddingBottom="8dp"
-                android:text="Register"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp"
+                android:text="@string/button_register"
                 android:textColor="@color/colorAccent"
                 android:textSize="16sp" />
 
@@ -114,11 +138,11 @@
                 android:id="@+id/btnLogin"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="16dp"
+                android:layout_margin="10dp"
                 android:background="@color/colorAccentLight"
-                android:paddingTop="8dp"
-                android:paddingBottom="8dp"
-                android:text="To Login Screen"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp"
+                android:text="@string/button_switch_to_login"
                 android:textColor="@color/colorAccent"
                 android:textSize="16sp" />
 
