@@ -7,9 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
-import androidx.activity.addCallback
 import androidx.fragment.app.FragmentManager
-import androidx.navigation.Navigation
 import androidx.navigation.fragment.findNavController
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -22,7 +20,6 @@ import org.wit.golfpoi.databinding.FragmentGolfPoiSelectMapBinding
 import org.wit.golfpoi.models.GolfPOIModel
 import org.wit.golfpoi.models.Location
 import timber.log.Timber
-import timber.log.Timber.i
 
 
 class GolfPoiSelectMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerClickListener {
@@ -35,7 +32,6 @@ class GolfPoiSelectMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMar
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-
     }
 
     override fun onCreateView(
@@ -43,8 +39,6 @@ class GolfPoiSelectMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMar
         savedInstanceState: Bundle?
     ): View? {
         // Inflate the layout for this fragment
-
-
 
         _fragBinding = FragmentGolfPoiSelectMapBinding.inflate(inflater, container, false)
         val root = fragBinding?.root
@@ -87,11 +81,6 @@ class GolfPoiSelectMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMar
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(loc, location.zoom))
         map.setOnMarkerDragListener(this)
         map.setOnMarkerClickListener(this)
-    }
-
-    fun onBackPressed() {
-        Timber.i("Back Button Pressed after changing marker")
-
     }
 
     override fun onMarkerDragStart(marker: Marker) {

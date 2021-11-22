@@ -43,30 +43,42 @@
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/textInputEmail"
-                style="@style/parent"
-                android:layout_marginTop="25dp">
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/login_email_hint"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
-                <EditText
+                <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/editTextEmail"
-                    style="@style/modifiedEditText"
-                    android:hint="@string/login_email_hint"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_margin="8dp"
                     android:inputType="textEmailAddress"
-                    android:textSize="20sp"
-                    android:maxLines="1" />
+                    android:maxLength="25"
+                    android:maxLines="1"
+                    android:padding="8dp"
+                    android:textColor="@color/colorAccent"
+                    android:textSize="20sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/textInputPassword"
-                style="@style/parent"
-                android:layout_marginTop="25dp">
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/login_password_hint"
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
-                <EditText
+                <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/editTextPassword"
-                    style="@style/modifiedEditText"
-                    android:hint="@string/login_password_hint"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_margin="8dp"
                     android:inputType="textPassword"
-                    android:textSize="20sp"
-                    android:maxLines="1" />
+                    android:maxLength="25"
+                    android:maxLines="1"
+                    android:padding="8dp"
+                    android:textColor="@color/colorAccent"
+                    android:textSize="20sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <Button
@@ -77,8 +89,8 @@
                 android:background="@color/colorAccentLight"
                 android:paddingTop="8dp"
                 android:paddingBottom="8dp"
-                android:text="Login"
-                android:textColor="@color/colorAccent"
+                android:text="@string/button_login"
+                android:textColor="#455A64"
                 android:textSize="16sp" />
 
             <Button
@@ -89,15 +101,13 @@
                 android:background="@color/colorAccentLight"
                 android:paddingTop="8dp"
                 android:paddingBottom="8dp"
-                android:text="To Register Screen"
-                android:textColor="@color/colorAccent"
+                android:text="@string/button_switch_to_register"
+                android:textColor="#455A64"
                 android:textSize="16sp" />
 
 
 
         </LinearLayout>
     </ScrollView>
-
-
 
 </RelativeLayout>

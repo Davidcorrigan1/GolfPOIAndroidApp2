@@ -17,7 +17,6 @@ import androidx.navigation.ui.NavigationUI
 import com.google.android.material.snackbar.Snackbar
 import com.squareup.picasso.Picasso
 import org.wit.golfpoi.R
-import org.wit.golfpoi.activities.Home
 import org.wit.golfpoi.databinding.FragmentGolfPoiBinding
 import org.wit.golfpoi.helpers.showImagePicker
 import org.wit.golfpoi.main.MainApp
@@ -47,7 +46,7 @@ class GolfPoiFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         // Inflate the layout for this fragment
         _fragBinding = FragmentGolfPoiBinding.inflate(inflater, container, false)
         val root = fragBinding.root
@@ -58,8 +57,6 @@ class GolfPoiFragment : Fragment() {
         if (golfPOIBundle?.get("golfPOI") != null) {
             golfPOI = golfPOIBundle.getParcelable("golfPOI")!!
         }
-
-        i("The bundle1: ${golfPOI}")
 
         // creating objects needed for the spinner drop down
         // Dropdown of Provinces taken from the strings resource file
@@ -75,14 +72,10 @@ class GolfPoiFragment : Fragment() {
         fragBinding.golfPOIparPicker.minValue = 70
         fragBinding.golfPOIparPicker.maxValue = 72
 
-        if (app.golfPOIData.findPOI(golfPOI.id) != null) {
-            fragBinding.btnAdd.setText(R.string.button_saveGolfPOI)
-        }
-
         if ((golfPOI.courseTitle != "" ) ||
             (golfPOI.courseDescription != "") ||
             (golfPOI.coursePar != 0 ) ||
-            (golfPOI.lng.equals(0) || golfPOI.lat.equals(0)) ||
+            (golfPOI.lng.equals(0.0) || golfPOI.lat.equals(0.0)) ||
             (golfPOI.image != Uri.EMPTY)){
             i("golfPOI.courseTitle:  ${golfPOI.courseTitle}")
             fragBinding.golfPOITitle.setText(golfPOI.courseTitle)
@@ -96,7 +89,7 @@ class GolfPoiFragment : Fragment() {
             }
 
             // check the current selected provence and default to that one!
-            var spinnerPosition : Int = adapter.getPosition(golfPOI.courseProvince)
+            val spinnerPosition : Int = adapter.getPosition(golfPOI.courseProvince)
             spinner.setSelection(spinnerPosition)
             i("Setting the dropdown default from model value")
         }
@@ -128,45 +121,24 @@ class GolfPoiFragment : Fragment() {
 
     // Implements a menu event handler;
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return NavigationUI.onNavDestinationSelected(item,
-            requireView().findNavController()) || super.onOptionsItemSelected(item)
+        if (item.itemId == R.id.golfPoiSave) {
+            saveGolfCourseData(fragBinding)
+            return false
+        } else {
+            return NavigationUI.onNavDestinationSelected(
+                item,
+                requireView().findNavController()
+            ) || super.onOptionsItemSelected(item)
+        }
     }
 
     // Set the listener buttons for choosing image and creating/updating the POI
-    fun setButtonListener (layout: FragmentGolfPoiBinding) {
+    private fun setButtonListener (layout: FragmentGolfPoiBinding) {
         // Listener for the Add Image button
         layout.btnChooseImage.setOnClickListener {
             showImagePicker(imageIntentLauncher)
         }
 
-        // Listener and action for the Add GOlf Course button
-        layout.btnAdd.setOnClickListener() {
-            golfPOI!!.courseTitle = layout.golfPOITitle.text.toString()
-            golfPOI.courseDescription = layout.golfPOIDesc.text.toString()
-            golfPOI.courseProvince = setProvinces
-            golfPOI.coursePar = layout.golfPOIparPicker.value
-
-            i("Setting the model province to $setProvinces")
-
-            if (golfPOI.courseTitle.isNotEmpty() && golfPOI.courseDescription.isNotEmpty()) {
-                if (app.golfPOIData.findPOI(golfPOI.id) != null) {
-                    i("save Button Pressed ${golfPOI.courseTitle} and ${golfPOI.courseDescription}")
-                    i("Course being saved: ${golfPOI}")
-                    app.golfPOIData.updatePOI(golfPOI.copy())
-                } else {
-                    i("add Button Pressed ${golfPOI.courseTitle} and ${golfPOI.courseDescription}")
-                    app.golfPOIData.createPOI(golfPOI.copy())
-                }
-                var navController = it.findNavController()
-                navController.navigate(R.id.action_golfPoiFragment_to_golfPoiListFragment)
-
-            } else {
-                Snackbar
-                    .make(it, R.string.prompt_addGolfPOI, Snackbar.LENGTH_LONG)
-                    .show()
-            }
-
-        }
 
         // Set the listener for the button to select the location
         layout.btnGolfPOILocation.setOnClickListener {
@@ -187,7 +159,36 @@ class GolfPoiFragment : Fragment() {
 
     }
 
-    fun setSpinnerListener (spinner: Spinner, provinces: Array<String>) {
+    private fun saveGolfCourseData (layout: FragmentGolfPoiBinding) {
+        golfPOI.courseTitle = layout.golfPOITitle.text.toString()
+        golfPOI.courseDescription = layout.golfPOIDesc.text.toString()
+        golfPOI.courseProvince = setProvinces
+        golfPOI.coursePar = layout.golfPOIparPicker.value
+
+        i("Setting the model province to $setProvinces")
+
+        if (golfPOI.courseTitle.isNotEmpty() && golfPOI.courseDescription.isNotEmpty()) {
+            if (app.golfPOIData.findPOI(golfPOI.id) != null) {
+                i("save Button Pressed ${golfPOI.courseTitle} and ${golfPOI.courseDescription}")
+                i("Course being saved: $golfPOI")
+                app.golfPOIData.updatePOI(golfPOI.copy())
+            } else {
+                i("add Button Pressed ${golfPOI.courseTitle} and ${golfPOI.courseDescription}")
+                app.golfPOIData.createPOI(golfPOI.copy())
+            }
+            val navController = view?.findNavController()
+            navController?.navigate(R.id.action_golfPoiFragment_to_golfPoiListFragment)
+
+        } else {
+            view?.let {
+                Snackbar
+                    .make(it, R.string.prompt_addGolfPOI, Snackbar.LENGTH_LONG)
+                    .show()
+            }
+        }
+    }
+
+    private fun setSpinnerListener (spinner: Spinner, provinces: Array<String>) {
         // Listener for the spinner dropdown for provinces
         spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
@@ -210,7 +211,7 @@ class GolfPoiFragment : Fragment() {
                 when(result.resultCode){
                     AppCompatActivity.RESULT_OK -> {
                         if (result.data != null) {
-                            golfPOI!!.image = result.data!!.data!!
+                            golfPOI.image = result.data!!.data!!
                             i("result.data.data: ${result.data!!.data!!}")
                             i("golfPOI.image: ${golfPOI.image}")
                             Picasso.get()

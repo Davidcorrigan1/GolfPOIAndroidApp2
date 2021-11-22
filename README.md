@@ -1,4 +1,4 @@
-# Assignment1 - Golf Ireland Andrroid application.
+# Assignment2 - Golf Ireland Android application.
 
 Name: David Corrigan
 

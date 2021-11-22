@@ -35,33 +35,48 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
 
-                <EditText
-                    android:id="@+id/golfPOITitle"
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/golfPOITitleLayout"
                     android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:layout_margin="8dp"
-                    android:autofillHints="test hint"
+                    android:layout_height="wrap_content"
                     android:hint="@string/hint_golfPOITitle"
-                    android:inputType="text"
-                    android:maxLength="25"
-                    android:maxLines="1"
-                    android:padding="8dp"
-                    android:textColor="@color/colorAccent"
-                    android:textSize="20sp" />
+                    app:hintTextAppearance="@style/TextAppearance.App.TextInputLayout"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
 
-                <EditText
-                    android:id="@+id/golfPOIDesc"
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/golfPOITitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="48dp"
+                        android:layout_margin="8dp"
+                        android:inputType="text"
+                        android:maxLength="25"
+                        android:maxLines="1"
+                        android:padding="8dp"
+                        android:textColor="@color/colorAccent"
+                        android:textSize="20sp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/golfPOIDescLayout"
                     android:layout_width="match_parent"
-                    android:layout_height="100dp"
-                    android:layout_margin="8dp"
-                    android:autofillHints="test hint"
-                    android:hint="@string/hint_golfPOIDesc"
-                    android:inputType="textMultiLine"
-                    android:maxLength="250"
-                    android:maxLines="5"
-                    android:padding="8dp"
+                    android:layout_height="wrap_content"
                     android:textColor="@color/colorAccent"
-                    android:textSize="20sp" />
+                    android:hint="@string/hint_golfPOIDesc"
+                    app:hintTextAppearance="@style/TextAppearance.App.TextInputLayout"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/golfPOIDesc"
+                        android:layout_width="match_parent"
+                        android:layout_height="120dp"
+                        android:layout_margin="8dp"
+                        android:inputType="textMultiLine"
+                        android:maxLength="250"
+                        android:maxLines="6"
+                        android:padding="8dp"
+                        android:textColor="@color/colorAccent"
+                        android:textSize="20sp" />
+                </com.google.android.material.textfield.TextInputLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -69,28 +84,16 @@
                     android:orientation="horizontal"
                     android:weightSum="4">
 
-
-                    <TextView
-                        android:id="@+id/golfPOIProvinceText"
-                        android:layout_width="match_parent"
-                        android:layout_height="47dp"
-                        android:layout_marginStart="8dp"
-                        android:layout_marginTop="10dp"
-                        android:layout_weight="3"
-                        android:text="Province"
-                        android:textColor="@color/colorAccent"
-                        android:textSize="20sp" />
-
                     <Spinner
                         android:id="@+id/provinceSpinner"
                         android:layout_width="match_parent"
                         android:layout_height="48dp"
                         android:layout_margin="8dp"
+                        android:layout_weight="5"
                         android:padding="8dp"
-                        android:layout_weight="1"
-                        android:textSize="20sp"
-                        app:layout_constraintEnd_toEndOf="@id/golfPOIProvinceText"
+                        android:textSize="25sp"
                         tools:ignore="SpeakableTextPresentCheck" />
+
                 </LinearLayout>
 
                 <LinearLayout
@@ -98,7 +101,6 @@
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:weightSum="4">
-
 
                     <TextView
                         android:id="@+id/golfPOIParText"
@@ -127,10 +129,17 @@
                         app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintVertical_bias="0.333" />
                 </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="4">
+
                 <Button
                     android:id="@+id/btn_choose_image"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_width="170dp"
+                    android:layout_height="72dp"
                     android:layout_margin="16dp"
                     android:background="@color/colorAccent"
                     android:paddingTop="8dp"
@@ -139,38 +148,30 @@
                     android:textColor="@color/colorAccent"
                     android:textSize="16sp" />
 
-                <ImageView
-                    android:id="@+id/golfPOIImage"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:srcCompat="@mipmap/ic_launcher_round"/>
-
                 <Button
                     android:id="@+id/btnGolfPOILocation"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_width="170dp"
+                    android:layout_height="72dp"
                     android:layout_margin="16dp"
                     android:background="@color/colorAccent"
-                    android:paddingBottom="8dp"
                     android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
                     android:stateListAnimator="@null"
                     android:text="@string/button_location"
                     android:textColor="@color/colorAccent"
-                    android:textSize="16sp"/>
-
-                <Button
-                    android:id="@+id/btnAdd"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="16dp"
-                    android:background="@color/colorBackground"
-                    android:backgroundTint="@color/colorBackground"
-                    android:paddingTop="8dp"
-                    android:paddingBottom="8dp"
-                    android:stateListAnimator="@null"
-                    android:text="@string/button_addGolfPOI"
-                    android:textColor="@color/colorAccent"
                     android:textSize="16sp" />
+            </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/golfPOIImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="170dp"
+                    android:layout_marginStart="2dp"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginEnd="2dp"
+                    android:layout_marginBottom="2dp"
+                    app:srcCompat="@mipmap/ic_launcher_round" />
+
 
             </LinearLayout>
         </ScrollView>

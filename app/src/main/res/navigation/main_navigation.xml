@@ -96,5 +96,8 @@
             app:destination="@id/golfPoiListFragment"
             app:enterAnim="@anim/nav_default_enter_anim"
             app:exitAnim="@anim/nav_default_exit_anim" />
+        <action
+            android:id="@+id/action_golfPoisOverviewMapFragment_to_golfPoiFragment"
+            app:destination="@id/golfPoiFragment" />
     </fragment>
 </navigation>
