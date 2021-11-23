@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import timber.log.Timber
+import timber.log.Timber.i
 
 class FirebaseAuthManager(application: Application) {
 
@@ -16,9 +17,10 @@ class FirebaseAuthManager(application: Application) {
     var errorStatus = MutableLiveData<Boolean>()
 
     init {
+        i("Firebase Initiating FirebaseAuthManager")
         this.application = application
         firebaseAuth = FirebaseAuth.getInstance()
-
+        //i("Firebase User: ${firebaseAuth!!.currentUser!!.email}")
         if (firebaseAuth!!.currentUser != null) {
             liveFirebaseUser.postValue(firebaseAuth!!.currentUser)
             loggedOut.postValue(false)
@@ -30,10 +32,12 @@ class FirebaseAuthManager(application: Application) {
         firebaseAuth!!.signInWithEmailAndPassword(email!!, password!!)
             .addOnCompleteListener(application!!.mainExecutor, { task ->
                 if (task.isSuccessful) {
+                    Timber.i( "Firebase Login Successful: ${task.result}")
                     liveFirebaseUser.postValue(firebaseAuth!!.currentUser)
+                    loggedOut.postValue(false)
                     errorStatus.postValue(false)
                 } else {
-                    Timber.i( "Login Failure: $task.exception!!.message")
+                    Timber.i( "Firebase Login Failure: $task.exception!!.message")
                     errorStatus.postValue(true)
                 }
             })
@@ -43,10 +47,12 @@ class FirebaseAuthManager(application: Application) {
         firebaseAuth!!.createUserWithEmailAndPassword(email!!, password!!)
             .addOnCompleteListener(application!!.mainExecutor, { task ->
                 if (task.isSuccessful) {
+                    Timber.i( "Firebase Registration Successful: ${task.result}")
                     liveFirebaseUser.postValue(firebaseAuth!!.currentUser)
+                    loggedOut.postValue(false)
                     errorStatus.postValue(false)
                 } else {
-                    Timber.i( "Registration Failure: $task.exception!!.message")
+                    Timber.i( "Firebase Registration Failure: $task.exception!!.message")
                     errorStatus.postValue(true)
                 }
             })

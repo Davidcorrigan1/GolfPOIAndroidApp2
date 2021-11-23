@@ -25,7 +25,9 @@ import timber.log.Timber.i
 
 
 class GolfLoginFragment : Fragment() {
-    private lateinit var loginViewModel : LoginViewModel
+    private val loginViewModel : LoginViewModel by activityViewModels()
+    private val loggedInViewModel : LoggedInViewModel by activityViewModels()
+
 
     lateinit var app: MainApp
     private var _fragBinding: FragmentGolfLoginBinding? = null
@@ -45,19 +47,23 @@ class GolfLoginFragment : Fragment() {
         _fragBinding = FragmentGolfLoginBinding.inflate(inflater, container, false)
         val root = fragBinding?.root
 
-        setButtonListener(fragBinding)
+        setLoginButtonListener(fragBinding)
+        setRegisterButtonListener(fragBinding)
 
         return root
 
     }
 
+
     override fun onResume() {
         super.onResume()
-        // Check if user is signed in (non-null) and update UI accordingly.
-        loginViewModel = ViewModelProvider(activity as AppCompatActivity).get(LoginViewModel::class.java)
-        loginViewModel.liveFirebaseUser.observe(activity as AppCompatActivity, Observer
-        { firebaseUser -> if (firebaseUser != null) {
-            i("FirebaseUser: $firebaseUser")
+        i("Firebase : Fragment Resuming here!")
+
+        loggedInViewModel.loggedOut.observe(activity as AppCompatActivity, Observer
+        { userLoggedOut ->
+            i("FirebaseUserLoggedOut: $userLoggedOut")
+            if (userLoggedOut == false) {
+            i("FirebaseUserLoggedOut: $userLoggedOut")
             var navController = findNavController()
             navController.navigate(R.id.action_golfLoginFragment_to_golfPoiListFragment)} })
 
@@ -74,10 +80,10 @@ class GolfLoginFragment : Fragment() {
             }
     }
 
-    fun setButtonListener(layout: FragmentGolfLoginBinding) {
+    fun setLoginButtonListener(layout: FragmentGolfLoginBinding) {
 
         layout.btnLogin.setOnClickListener {
-            i("Check the user exists or Firebase")
+            i("Check the user exists on Firebase")
 
             signIn(layout.editTextEmail.text.toString(), layout.editTextPassword.text.toString())
 
@@ -87,7 +93,7 @@ class GolfLoginFragment : Fragment() {
             var loggedInUser: GolfUserModel? =
                 app.golfPOIData.findUser(layout.editTextEmail.text.toString())
 
-            if (loggedInUser != null ) {
+            if (loggedInUser != null) {
                 app.golfPOIData.setCurrentUser(loggedInUser)
                 //var navController = it.findNavController()
                 //navController.navigate(R.id.action_golfLoginFragment_to_golfPoiListFragment)
@@ -95,8 +101,9 @@ class GolfLoginFragment : Fragment() {
                 // Setting the logged on user name in the NavDrawer
                 var textUserName = activity?.findViewById<TextView>(R.id.navTitleTextView)
                 if (textUserName != null) {
-                    textUserName.text = app.golfPOIData.getCurrentUser().firstName.toString() + " " +
-                                        app.golfPOIData.getCurrentUser().lastName.toString()
+                    textUserName.text =
+                        app.golfPOIData.getCurrentUser().firstName.toString() + " " +
+                                app.golfPOIData.getCurrentUser().lastName.toString()
                 }
 
                 // Setting the logged on user email in the NavDrawer
@@ -111,7 +118,9 @@ class GolfLoginFragment : Fragment() {
                 Snackbar.make(it, R.string.login_error_message, Snackbar.LENGTH_LONG).show()
             }
         }
+    }
 
+    fun setRegisterButtonListener(layout: FragmentGolfLoginBinding) {
         layout.btnRegister.setOnClickListener {
             i("Sending user to register")
             findNavController().navigate(R.id.action_golfLoginFragment_to_golfPoiRegisterFragment)
