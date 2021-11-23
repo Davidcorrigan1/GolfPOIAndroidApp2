@@ -1,4 +1,4 @@
-package org.wit.golfpoi.fragments
+package org.wit.golfpoi.ui.selectLocation
 
 
 import android.os.Bundle

@@ -1,4 +1,4 @@
-package org.wit.golfpoi.fragments
+package org.wit.golfpoi.ui.addPOI
 
 import android.content.Intent
 import android.net.Uri

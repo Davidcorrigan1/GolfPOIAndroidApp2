@@ -1,4 +1,4 @@
-package org.wit.golfpoi.fragments
+package org.wit.golfpoi.ui.register
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -6,13 +6,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import org.wit.golfpoi.R
 import org.wit.golfpoi.databinding.FragmentGolfPoiRegisterBinding
 import org.wit.golfpoi.main.MainApp
 import org.wit.golfpoi.models.GolfUserModel
+import org.wit.golfpoi.ui.auth.GolfLoginFragment
 import timber.log.Timber
 import java.time.LocalDate
 

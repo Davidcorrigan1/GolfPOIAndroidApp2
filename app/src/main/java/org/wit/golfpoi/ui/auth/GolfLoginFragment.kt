@@ -1,6 +1,6 @@
-package org.wit.golfpoi.fragments
+package org.wit.golfpoi.ui.auth
 
-import android.app.AlertDialog
+
 import android.os.Bundle
 import android.text.TextUtils
 import androidx.fragment.app.Fragment
@@ -9,11 +9,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.Toast
+import androidx.lifecycle.Observer
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.FirebaseUser
 import org.wit.golfpoi.R
 import org.wit.golfpoi.databinding.FragmentGolfLoginBinding
 import org.wit.golfpoi.main.MainApp
@@ -23,12 +25,11 @@ import timber.log.Timber.i
 
 
 class GolfLoginFragment : Fragment() {
+    private lateinit var loginViewModel : LoginViewModel
 
     lateinit var app: MainApp
     private var _fragBinding: FragmentGolfLoginBinding? = null
     private val fragBinding get() = _fragBinding!!
-    private lateinit var auth: FirebaseAuth
-    lateinit var loader : AlertDialog
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,18 +45,25 @@ class GolfLoginFragment : Fragment() {
         _fragBinding = FragmentGolfLoginBinding.inflate(inflater, container, false)
         val root = fragBinding?.root
 
-        auth = FirebaseAuth.getInstance()
-
         setButtonListener(fragBinding)
 
         return root
 
     }
 
-    override fun onStart() {
-        super.onStart()
+    override fun onResume() {
+        super.onResume()
         // Check if user is signed in (non-null) and update UI accordingly.
-        val currentUser = auth.currentUser
+        loginViewModel = ViewModelProvider(activity as AppCompatActivity).get(LoginViewModel::class.java)
+        loginViewModel.liveFirebaseUser.observe(activity as AppCompatActivity, Observer
+        { firebaseUser -> if (firebaseUser != null) {
+            i("FirebaseUser: $firebaseUser")
+            var navController = findNavController()
+            navController.navigate(R.id.action_golfLoginFragment_to_golfPoiListFragment)} })
+
+        loginViewModel.firebaseAuthManager.errorStatus.observe(viewLifecycleOwner, Observer
+        { status -> checkStatus(status) })
+
     }
 
     companion object {
@@ -73,16 +81,16 @@ class GolfLoginFragment : Fragment() {
 
             signIn(layout.editTextEmail.text.toString(), layout.editTextPassword.text.toString())
 
-            // need to include the below someone in signIn above!
-
+            // Authentication above
+            // Below is getting the user object from the DB
 
             var loggedInUser: GolfUserModel? =
                 app.golfPOIData.findUser(layout.editTextEmail.text.toString())
 
-            if (loggedInUser != null && (loggedInUser.userPassword.equals(layout.editTextPassword.text.toString()))) {
+            if (loggedInUser != null ) {
                 app.golfPOIData.setCurrentUser(loggedInUser)
-                var navController = it.findNavController()
-                navController.navigate(R.id.action_golfLoginFragment_to_golfPoiListFragment)
+                //var navController = it.findNavController()
+                //navController.navigate(R.id.action_golfLoginFragment_to_golfPoiListFragment)
 
                 // Setting the logged on user name in the NavDrawer
                 var textUserName = activity?.findViewById<TextView>(R.id.navTitleTextView)
@@ -115,49 +123,21 @@ class GolfLoginFragment : Fragment() {
         _fragBinding = null
     }
 
-    override fun onResume() {
-        super.onResume()
-    }
-
     private fun signIn(email: String, password: String) {
         Timber.d( "signIn:$email")
         if (!validateForm()) {
             return
         }
 
+        loginViewModel.login(email,password)
 
-        // [START sign_in_with_email]
-        auth.signInWithEmailAndPassword(email, password)
-            .addOnCompleteListener(activity?.mainExecutor!!) { task ->
-                if (task.isSuccessful) {
-                    // Sign in success, update UI with the signed-in user's information
-                    Timber.d( "signInWithEmail:success")
-                    val user = auth.currentUser
-
-                } else {
-                    // If sign in fails, display a message to the user.
-                    Timber.w( "signInWithEmail:failure $task.exception")
-                    Toast.makeText(activity, "Authentication failed.",
-                        Toast.LENGTH_SHORT).show()
-
-                }
-
-                // [START_EXCLUDE]
-                if (!task.isSuccessful) {
-                    Toast.makeText(activity, R.string.login_error_message,
-                        Toast.LENGTH_LONG).show()
-                }
-
-                // [END_EXCLUDE]
-            }
-        // [END sign_in_with_email]
-    }
-
-    private fun signOut() {
-        auth.signOut()
     }
 
 
+    private fun checkStatus(error:Boolean) {
+        if (error)
+            Snackbar.make(requireView(), R.string.login_error_message, Snackbar.LENGTH_LONG).show()
+    }
 
     private fun validateForm(): Boolean {
         var valid = true
