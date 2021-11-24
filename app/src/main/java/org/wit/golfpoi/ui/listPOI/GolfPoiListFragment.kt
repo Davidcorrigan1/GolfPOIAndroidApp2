@@ -6,11 +6,11 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.*
 import android.widget.SearchView
-import android.widget.Toolbar
 import androidx.fragment.app.Fragment
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.lifecycle.Observer
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
@@ -22,19 +22,22 @@ import org.wit.golfpoi.R
 import org.wit.golfpoi.adapter.GolfPOIAdapter
 import org.wit.golfpoi.adapter.GolfPOIListener
 import org.wit.golfpoi.databinding.FragmentGolfPoiListBinding
-import org.wit.golfpoi.fragments.GolfPoiListFragmentDirections
+import org.wit.golfpoi.helpers.SwipeToDeleteCallback
 import org.wit.golfpoi.main.MainApp
 import org.wit.golfpoi.models.GolfPOIModel
+import org.wit.golfpoi.ui.auth.LoggedInViewModel
+import org.wit.golfpoi.ui.auth.LoginViewModel
 import timber.log.Timber.i
 
 
 class GolfPoiListFragment : Fragment(), GolfPOIListener{
+    private lateinit var golfPoiListViewModel : GolfPoiListViewModel
+    private val loggedInViewModel : LoggedInViewModel by activityViewModels()
     lateinit var app: MainApp
     private lateinit var refreshIntentLauncher : ActivityResultLauncher<Intent>
     private var _fragBinding: FragmentGolfPoiListBinding? = null
     private val fragBinding get() = _fragBinding!!
     private var searchView: SearchView? = null
-    private lateinit var golfPoiListViewModel: GolfPoiListViewModel
 
     // When the Fragment is created
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -56,15 +59,32 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
         fragBinding.recyclerView.setLayoutManager(LinearLayoutManager(activity))
         loadGolfPOIs()
 
-        golfPoiListViewModel = ViewModelProvider(this).get(GolfPoiListViewModel::class.java)
-        golfPoiListViewModel.observableGolfPOIs.observe(viewLifecycleOwner, Observer {
-                golfPOIs ->
-            golfPOIs?.let { render(ArrayList(golfPOIs)) }
-        })
+        val swipeDeleteHandler = object : SwipeToDeleteCallback(requireContext()) {
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+
+                val position = viewHolder.adapterPosition
+                i("Deleting Item At position $position")
+
+                // remove from the recyclerview
+                val adapter = fragBinding.recyclerView.adapter as GolfPOIAdapter
+                adapter.removeAt(viewHolder.adapterPosition)
+
+                // Delete from the data source
+                app.golfPOIData.removePOI(position)
+                fragBinding.recyclerView.adapter?.notifyItemRemoved(position)
+            }
+        }
+        val itemTouchDeleteHelper = ItemTouchHelper(swipeDeleteHandler)
+        itemTouchDeleteHelper.attachToRecyclerView(fragBinding.recyclerView)
 
         registerRefreshCallback(fragBinding)
 
         return root
+    }
+
+    override fun onStart() {
+        super.onStart()
+        golfPoiListViewModel = ViewModelProvider(activity as AppCompatActivity).get(GolfPoiListViewModel::class.java)
     }
 
     override fun onResume() {
@@ -81,12 +101,6 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
                 arguments = Bundle().apply {}
             }
     }
-
-    // Render the data
-    private fun render(golfPOIs: ArrayList<GolfPOIModel>) {
-        fragBinding.recyclerView.adapter = GolfPOIAdapter(golfPOIs,this)
-    }
-
 
     // Handle the click of the Add button to trigger navigation and send the data
     override fun onGolfPOIClick(golfPOI: GolfPOIModel) {
@@ -129,6 +143,10 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
         } else if (item.itemId == R.id.golfPoiUserFilter) {
             loadGolfPOIs(app.golfPOIData.getCurrentUser().id)
             return false
+        } else if (item.itemId == R.id.golfLoginFragment) {
+            loggedInViewModel.logOut()
+            return NavigationUI.onNavDestinationSelected(item,
+                requireView().findNavController()) || super.onOptionsItemSelected(item)
         } else {
             return NavigationUI.onNavDestinationSelected(item,
                    requireView().findNavController()) || super.onOptionsItemSelected(item)

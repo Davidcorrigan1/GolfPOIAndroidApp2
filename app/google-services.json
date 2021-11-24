@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "766624479815",
+    "project_id": "golfcourses-ireland",
+    "storage_bucket": "golfcourses-ireland.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:766624479815:android:785aaa9d875fb19a6ccf62",
+        "android_client_info": {
+          "package_name": "org.wit.golfpoi"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "766624479815-6i4hqe19qo86esgmodaotsmt486h3q1p.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCYsq6I9rFWHQsFTECAtvhZ_jaTO_V2z2k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "766624479815-6i4hqe19qo86esgmodaotsmt486h3q1p.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
