@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
 import androidx.lifecycle.Observer
+import com.google.firebase.auth.FirebaseAuth
 import org.wit.golfpoi.R
 import org.wit.golfpoi.databinding.FragmentGolfPoiRegisterBinding
 import org.wit.golfpoi.main.MainApp
@@ -28,7 +29,7 @@ class GolfPoiRegisterFragment : Fragment() {
     lateinit var app: MainApp
     private lateinit var registerViewModel: RegisterViewModel
     private val loggedInViewModel : LoggedInViewModel by activityViewModels()
-    private lateinit var loginViewModel : LoginViewModel
+    private val loginViewModel : LoginViewModel by activityViewModels()
 
     private var _fragBinding: FragmentGolfPoiRegisterBinding? = null
     private val fragBinding get() = _fragBinding!!
@@ -50,6 +51,17 @@ class GolfPoiRegisterFragment : Fragment() {
 
         registerViewModel = ViewModelProvider(activity as AppCompatActivity).get(RegisterViewModel::class.java)
 
+        Timber.i("Firebase - onCreateView Entered")
+
+        // defining listener callback
+        val authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
+            val firebaseUser = firebaseAuth.currentUser
+            if (firebaseUser != null) {
+                Timber.i("Firebase authStateLister Called")
+                view?.post { findNavController().navigate(R.id.action_golfPoiRegisterFragment_to_golfPoiListFragment)}
+            }
+        }
+        loginViewModel.addFirebaseStateListener(authStateListener)
         setButtonListener(fragBinding)
 
         return root
@@ -134,7 +146,6 @@ class GolfPoiRegisterFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         // Check if user is signed in (non-null) and update UI accordingly.
-        loginViewModel = ViewModelProvider(activity as AppCompatActivity).get(LoginViewModel::class.java)
 
         loggedInViewModel.loggedOut.observe(activity as AppCompatActivity, Observer
         { userLoggedOut ->

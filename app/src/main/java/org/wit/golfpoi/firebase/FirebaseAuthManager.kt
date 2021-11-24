@@ -63,4 +63,9 @@ class FirebaseAuthManager(application: Application) {
         loggedOut.postValue(true)
         errorStatus.postValue(false)
     }
+
+    fun addFirebaseStateListener(listener: FirebaseAuth.AuthStateListener) {
+        firebaseAuth!!.addAuthStateListener(listener)
+
+    }
 }

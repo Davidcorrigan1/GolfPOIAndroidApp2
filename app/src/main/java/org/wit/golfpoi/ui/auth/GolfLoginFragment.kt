@@ -1,6 +1,5 @@
 package org.wit.golfpoi.ui.auth
 
-
 import android.os.Bundle
 import android.text.TextUtils
 import androidx.fragment.app.Fragment
@@ -8,14 +7,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import android.widget.Toast
 import androidx.lifecycle.Observer
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.auth.FirebaseAuth
 import org.wit.golfpoi.R
 import org.wit.golfpoi.databinding.FragmentGolfLoginBinding
 import org.wit.golfpoi.main.MainApp
@@ -27,16 +24,15 @@ import timber.log.Timber.i
 class GolfLoginFragment : Fragment() {
     private val loginViewModel : LoginViewModel by activityViewModels()
     private val loggedInViewModel : LoggedInViewModel by activityViewModels()
-
-
     lateinit var app: MainApp
     private var _fragBinding: FragmentGolfLoginBinding? = null
     private val fragBinding get() = _fragBinding!!
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         app = activity?.application as MainApp
-
+        i("Firebase - onCreate Entered")
     }
 
     override fun onCreateView(
@@ -47,28 +43,46 @@ class GolfLoginFragment : Fragment() {
         _fragBinding = FragmentGolfLoginBinding.inflate(inflater, container, false)
         val root = fragBinding?.root
 
+        i("Firebase - onCreateView Entered")
+
+        // defining listener callback
+        val authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
+            val firebaseUser = firebaseAuth.currentUser
+            if (firebaseUser != null) {
+                i("Firebase authStateLister Called")
+                view?.post { findNavController().navigate(R.id.action_golfLoginFragment_to_golfPoiListFragment)}
+            }
+        }
+
+        // Setting up listeners
         setLoginButtonListener(fragBinding)
         setRegisterButtonListener(fragBinding)
+        loginViewModel.addFirebaseStateListener(authStateListener)
 
         return root
+
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        /*loggedInViewModel.loggedOut.observe(activity as AppCompatActivity, Observer
+        { userLoggedOut ->
+            i("Firebase - onCreateCreated Entered")
+            i("FirebaseUserLoggedOut: $userLoggedOut")
+            if (userLoggedOut == false) {
+                i("FirebaseUserLoggedOut: $userLoggedOut")
+                view?.post { findNavController().navigate(R.id.action_golfLoginFragment_to_golfPoiListFragment)}} })
+*/
+        loginViewModel.firebaseAuthManager.errorStatus.observe(viewLifecycleOwner, Observer
+        { status -> checkStatus(status) })
 
     }
 
 
     override fun onResume() {
         super.onResume()
-        i("Firebase : Fragment Resuming here!")
-
-        loggedInViewModel.loggedOut.observe(activity as AppCompatActivity, Observer
-        { userLoggedOut ->
-            i("FirebaseUserLoggedOut: $userLoggedOut")
-            if (userLoggedOut == false) {
-            i("FirebaseUserLoggedOut: $userLoggedOut")
-            var navController = findNavController()
-            navController.navigate(R.id.action_golfLoginFragment_to_golfPoiListFragment)} })
-
-        loginViewModel.firebaseAuthManager.errorStatus.observe(viewLifecycleOwner, Observer
-        { status -> checkStatus(status) })
+        i("Firebase - onResume Entered")
 
     }
 
@@ -80,10 +94,11 @@ class GolfLoginFragment : Fragment() {
             }
     }
 
+    // This is the login Button listener which will authenicate with Firebase
     fun setLoginButtonListener(layout: FragmentGolfLoginBinding) {
 
         layout.btnLogin.setOnClickListener {
-            i("Check the user exists on Firebase")
+            i("Firebase - setOnClickListerner Entered")
 
             signIn(layout.editTextEmail.text.toString(), layout.editTextPassword.text.toString())
 
@@ -129,25 +144,28 @@ class GolfLoginFragment : Fragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
+        i("Firebase - onDestroyView Entered")
         _fragBinding = null
     }
 
+    // This method will validate the form data and then authenicate with Firebase via
+    // the login View Model.
     private fun signIn(email: String, password: String) {
         Timber.d( "signIn:$email")
         if (!validateForm()) {
             return
         }
-
         loginViewModel.login(email,password)
 
     }
 
-
+    // Checks the status variable to see if the login has been successful on Firebase
     private fun checkStatus(error:Boolean) {
         if (error)
             Snackbar.make(requireView(), R.string.login_error_message, Snackbar.LENGTH_LONG).show()
     }
 
+    // This method will validate the login screen entries.
     private fun validateForm(): Boolean {
         var valid = true
 
