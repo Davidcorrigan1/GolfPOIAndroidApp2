@@ -147,24 +147,15 @@ class GolfPoiRegisterFragment : Fragment() {
         super.onResume()
         // Check if user is signed in (non-null) and update UI accordingly.
 
-        loggedInViewModel.loggedOut.observe(activity as AppCompatActivity, Observer
-        { userLoggedOut ->
-            Timber.i("FirebaseUserLoggedOut: $userLoggedOut")
-            if (userLoggedOut == false) {
-                Timber.i("FirebaseUserLoggedOut: $userLoggedOut")
-                var navController = findNavController()
-                navController.navigate(R.id.action_golfPoiRegisterFragment_to_golfPoiListFragment)} })
-
-        loginViewModel.firebaseAuthManager.errorStatus.observe(activity as AppCompatActivity, Observer
-        { status -> checkStatus(status) })
     }
 
+    // Chech the status of the authentication
     private fun checkStatus(error:Boolean) {
         if (error)
             Snackbar.make(requireView(), R.string.login_error_message, Snackbar.LENGTH_LONG).show()
     }
 
-
+    // Validate the registration form is completed
     private fun validateForm(): Boolean {
         var valid = true
 

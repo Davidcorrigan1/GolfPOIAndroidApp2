@@ -17,6 +17,7 @@ import org.wit.golfpoi.databinding.NavHeaderBinding
 import org.wit.golfpoi.main.MainApp
 import org.wit.golfpoi.ui.auth.LoggedInViewModel
 import androidx.lifecycle.Observer
+import androidx.navigation.NavArgument
 
 
 class Home : AppCompatActivity() {
@@ -30,6 +31,7 @@ class Home : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        loggedInViewModel = ViewModelProvider(this).get(LoggedInViewModel::class.java)
         homeBinding = HomeBinding.inflate(layoutInflater)
         setContentView(homeBinding.root)
         drawerLayout = homeBinding.drawerLayout
@@ -46,6 +48,14 @@ class Home : AppCompatActivity() {
         val navView = homeBinding.navView
         navView.setupWithNavController(navController)
 
+        navController.addOnDestinationChangedListener { _, destination, arguments ->
+           when(destination.id) {
+               R.id.golfLoginFragment -> {
+                   loggedInViewModel.logOut()
+               }
+            }
+        }
+
     }
 
     override fun onStart() {
@@ -57,11 +67,6 @@ class Home : AppCompatActivity() {
             }
         })
 
-        /*loggedInViewModel.loggedOut.observe(this, Observer { loggedout ->
-            if (loggedout) {
-                startActivity(Intent(this, GolfLoginFragment::class.java))
-            }
-        })*/
     }
 
     override fun onSupportNavigateUp(): Boolean {

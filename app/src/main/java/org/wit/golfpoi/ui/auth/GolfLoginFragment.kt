@@ -66,19 +66,10 @@ class GolfLoginFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        /*loggedInViewModel.loggedOut.observe(activity as AppCompatActivity, Observer
-        { userLoggedOut ->
-            i("Firebase - onCreateCreated Entered")
-            i("FirebaseUserLoggedOut: $userLoggedOut")
-            if (userLoggedOut == false) {
-                i("FirebaseUserLoggedOut: $userLoggedOut")
-                view?.post { findNavController().navigate(R.id.action_golfLoginFragment_to_golfPoiListFragment)}} })
-*/
         loginViewModel.firebaseAuthManager.errorStatus.observe(viewLifecycleOwner, Observer
         { status -> checkStatus(status) })
 
     }
-
 
     override fun onResume() {
         super.onResume()
