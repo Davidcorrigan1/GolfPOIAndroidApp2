@@ -1,24 +1,36 @@
-package org.wit.golfpoi.fragments
+package org.wit.golfpoi.ui.register
 
 import android.os.Bundle
+import android.text.TextUtils
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.navigation.findNavController
+import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
+import androidx.lifecycle.Observer
+import com.google.firebase.auth.FirebaseAuth
 import org.wit.golfpoi.R
 import org.wit.golfpoi.databinding.FragmentGolfPoiRegisterBinding
 import org.wit.golfpoi.main.MainApp
 import org.wit.golfpoi.models.GolfUserModel
+import org.wit.golfpoi.ui.auth.GolfLoginFragment
+import org.wit.golfpoi.ui.auth.LoggedInViewModel
+import org.wit.golfpoi.ui.auth.LoginViewModel
 import timber.log.Timber
 import java.time.LocalDate
 
 class GolfPoiRegisterFragment : Fragment() {
 
     lateinit var app: MainApp
+    private lateinit var registerViewModel: RegisterViewModel
+    private val loggedInViewModel : LoggedInViewModel by activityViewModels()
+    private val loginViewModel : LoginViewModel by activityViewModels()
+
     private var _fragBinding: FragmentGolfPoiRegisterBinding? = null
     private val fragBinding get() = _fragBinding!!
     var user = GolfUserModel()
@@ -37,6 +49,19 @@ class GolfPoiRegisterFragment : Fragment() {
         _fragBinding = FragmentGolfPoiRegisterBinding.inflate(inflater, container, false)
         val root = fragBinding?.root
 
+        registerViewModel = ViewModelProvider(activity as AppCompatActivity).get(RegisterViewModel::class.java)
+
+        Timber.i("Firebase - onCreateView Entered")
+
+        // defining listener callback
+        val authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
+            val firebaseUser = firebaseAuth.currentUser
+            if (firebaseUser != null) {
+                Timber.i("Firebase authStateLister Called")
+                view?.post { findNavController().navigate(R.id.action_golfPoiRegisterFragment_to_golfPoiListFragment)}
+            }
+        }
+        loginViewModel.addFirebaseStateListener(authStateListener)
         setButtonListener(fragBinding)
 
         return root
@@ -54,7 +79,16 @@ class GolfPoiRegisterFragment : Fragment() {
     fun setButtonListener(layout: FragmentGolfPoiRegisterBinding) {
 
         layout.btnRegister.setOnClickListener {
-            Timber.i("Check the user already exists for email address")
+
+            if (validateForm()) {
+                registerViewModel.register(
+                    layout.editTextEmail.text.toString(),
+                    layout.editTextPassword.text.toString()
+                )
+            }
+
+            Timber.i("Check the user already exists for email address on DB")
+
             val existingUser: GolfUserModel? =
                 app.golfPOIData.findUser(layout.editTextEmail.text.toString())
             if (existingUser == null) {
@@ -83,7 +117,7 @@ class GolfPoiRegisterFragment : Fragment() {
                     if (textUserEmail != null) {
                         textUserEmail.text = app.golfPOIData.getCurrentUser().userEmail.toString()
                     }
-                    findNavController().navigate(R.id.action_golfPoiRegisterFragment_to_golfPoiListFragment)
+                    //findNavController().navigate(R.id.action_golfPoiRegisterFragment_to_golfPoiListFragment)
 
                 } else {
                     Snackbar
@@ -111,6 +145,37 @@ class GolfPoiRegisterFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
+        // Check if user is signed in (non-null) and update UI accordingly.
+
+    }
+
+    // Chech the status of the authentication
+    private fun checkStatus(error:Boolean) {
+        if (error)
+            Snackbar.make(requireView(), R.string.login_error_message, Snackbar.LENGTH_LONG).show()
+    }
+
+    // Validate the registration form is completed
+    private fun validateForm(): Boolean {
+        var valid = true
+
+        val email = fragBinding.editTextEmail.text.toString()
+        if (TextUtils.isEmpty(email)) {
+            fragBinding.editTextEmail.error = "Required."
+            valid = false
+        } else {
+            fragBinding.editTextEmail.error = null
+        }
+
+        val password = fragBinding.editTextPassword.text.toString()
+        if (TextUtils.isEmpty(password)) {
+            fragBinding.editTextPassword.error = "Required."
+            valid = false
+        } else {
+            fragBinding.editTextPassword.error = null
+        }
+
+        return valid
     }
 
 

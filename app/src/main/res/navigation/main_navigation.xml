@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/golfLoginFragment"
-        android:name="org.wit.golfpoi.fragments.GolfLoginFragment"
+        android:name="org.wit.golfpoi.ui.auth.GolfLoginFragment"
         android:label="Login"
         tools:layout="@layout/fragment_golf_login" >
         <action
@@ -23,7 +23,7 @@
     </fragment>
     <fragment
         android:id="@+id/golfPoiListFragment"
-        android:name="org.wit.golfpoi.fragments.GolfPoiListFragment"
+        android:name="org.wit.golfpoi.ui.listPOI.GolfPoiListFragment"
         android:label="Golf Course List"
         tools:layout="@layout/fragment_golf_poi_list" >
         <action
@@ -39,7 +39,7 @@
     </fragment>
     <fragment
         android:id="@+id/golfPoiRegisterFragment"
-        android:name="org.wit.golfpoi.fragments.GolfPoiRegisterFragment"
+        android:name="org.wit.golfpoi.ui.register.GolfPoiRegisterFragment"
         android:label="Register"
         tools:layout="@layout/fragment_golf_poi_register" >
         <action
@@ -55,7 +55,7 @@
     </fragment>
     <fragment
         android:id="@+id/golfPoiFragment"
-        android:name="org.wit.golfpoi.fragments.GolfPoiFragment"
+        android:name="org.wit.golfpoi.ui.addPOI.GolfPoiFragment"
         android:label="Add Golf Course Details"
         tools:layout="@layout/fragment_golf_poi" >
         <argument
@@ -74,7 +74,7 @@
     </fragment>
     <fragment
         android:id="@+id/golfPoiSelectMapFragment"
-        android:name="org.wit.golfpoi.fragments.GolfPoiSelectMapFragment"
+        android:name="org.wit.golfpoi.ui.selectLocation.GolfPoiSelectMapFragment"
         android:label="Select Course Location"
         tools:layout="@layout/fragment_golf_poi_select_map">
         <action
@@ -88,7 +88,7 @@
     </fragment>
     <fragment
         android:id="@+id/golfPoisOverviewMapFragment"
-        android:name="org.wit.golfpoi.fragments.GolfPoisOverviewMapFragment"
+        android:name="org.wit.golfpoi.ui.mapOverview.GolfPoisOverviewMapFragment"
         android:label="Course Location Overview Map"
         tools:layout="@layout/fragment_golf_pois_overview_map" >
         <action

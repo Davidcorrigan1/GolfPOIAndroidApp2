@@ -1,4 +1,4 @@
-package org.wit.golfpoi.fragments
+package org.wit.golfpoi.ui.addPOI
 
 import android.content.Intent
 import android.net.Uri
@@ -11,6 +11,7 @@ import android.widget.Spinner
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.NavigationUI
@@ -22,6 +23,7 @@ import org.wit.golfpoi.helpers.showImagePicker
 import org.wit.golfpoi.main.MainApp
 import org.wit.golfpoi.models.GolfPOIModel
 import org.wit.golfpoi.models.Location
+import org.wit.golfpoi.ui.auth.LoggedInViewModel
 import timber.log.Timber.i
 
 
@@ -32,6 +34,7 @@ class GolfPoiFragment : Fragment() {
     private lateinit var imageIntentLauncher : ActivityResultLauncher<Intent>
     private var _fragBinding: FragmentGolfPoiBinding? = null
     private val fragBinding get() = _fragBinding!!
+    private val loggedInViewModel : LoggedInViewModel by activityViewModels()
     var location = Location("Current", 52.245696, -7.139102, 15f)
     var setProvinces : String = ""
 
@@ -124,11 +127,14 @@ class GolfPoiFragment : Fragment() {
         if (item.itemId == R.id.golfPoiSave) {
             saveGolfCourseData(fragBinding)
             return false
+        } else if (item.itemId == R.id.golfLoginFragment) {
+            loggedInViewModel.logOut()
+            return NavigationUI.onNavDestinationSelected(item,
+                requireView().findNavController()) || super.onOptionsItemSelected(item)
         } else {
             return NavigationUI.onNavDestinationSelected(
                 item,
-                requireView().findNavController()
-            ) || super.onOptionsItemSelected(item)
+                requireView().findNavController()) || super.onOptionsItemSelected(item)
         }
     }
 
