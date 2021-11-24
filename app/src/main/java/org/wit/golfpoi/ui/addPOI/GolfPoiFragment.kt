@@ -98,7 +98,7 @@ class GolfPoiFragment : Fragment() {
         }
         setSpinnerListener(spinner, provinces)
         registerImagePickerCallback(fragBinding)
-        setButtonListener(fragBinding)
+        setLocationButtonListener(fragBinding)
 
         return root
     }
@@ -139,7 +139,7 @@ class GolfPoiFragment : Fragment() {
     }
 
     // Set the listener buttons for choosing image and creating/updating the POI
-    private fun setButtonListener (layout: FragmentGolfPoiBinding) {
+    private fun setLocationButtonListener (layout: FragmentGolfPoiBinding) {
         // Listener for the Add Image button
         layout.btnChooseImage.setOnClickListener {
             showImagePicker(imageIntentLauncher)
