@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import com.google.firebase.auth.FirebaseUser
 import org.wit.golfpoi.firebase.FirebaseAuthManager
+import timber.log.Timber.i
 
 class LoggedInViewModel(app: Application) : AndroidViewModel(app) {
 
@@ -13,6 +14,7 @@ class LoggedInViewModel(app: Application) : AndroidViewModel(app) {
     var loggedOut : MutableLiveData<Boolean> = firebaseAuthManager.loggedOut
 
     fun logOut() {
+        i("Firebase : LoggedInViewModel - logOut ")
         firebaseAuthManager.logOut()
     }
 }

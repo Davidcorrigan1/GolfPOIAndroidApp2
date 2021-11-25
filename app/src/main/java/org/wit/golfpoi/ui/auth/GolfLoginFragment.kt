@@ -50,9 +50,17 @@ class GolfLoginFragment : Fragment() {
             val firebaseUser = firebaseAuth.currentUser
             if (firebaseUser != null) {
                 i("Firebase authStateLister Called")
+                i("Firebase User: ${firebaseUser.email}")
                 view?.post { findNavController().navigate(R.id.action_golfLoginFragment_to_golfPoiListFragment)}
             }
         }
+
+        loginViewModel.firebaseAuthManager.loggedOut.observe(viewLifecycleOwner, Observer {
+                loggedOut -> if (loggedOut == false) {
+            i("Firebase logged out Checked")
+            i("Firebase loggedOut Value: $loggedOut")
+            view?.post { findNavController().navigate(R.id.action_golfLoginFragment_to_golfPoiListFragment)}
+        }})
 
         // Setting up listeners
         setLoginButtonListener(fragBinding)
@@ -68,12 +76,16 @@ class GolfLoginFragment : Fragment() {
 
         loginViewModel.firebaseAuthManager.errorStatus.observe(viewLifecycleOwner, Observer
         { status -> checkStatus(status) })
-
     }
+
 
     override fun onResume() {
         super.onResume()
         i("Firebase - onResume Entered")
+        loginViewModel.firebaseAuthManager.errorStatus.observe(viewLifecycleOwner, Observer
+        { status -> checkStatus(status) })
+
+
 
     }
 

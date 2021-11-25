@@ -22,6 +22,8 @@ class FirebaseAuthManager(application: Application) {
         firebaseAuth = FirebaseAuth.getInstance()
         //i("Firebase User: ${firebaseAuth!!.currentUser!!.email}")
         if (firebaseAuth!!.currentUser != null) {
+            i("Firebase FirebaseAuthManager: ${firebaseAuth!!.currentUser}")
+            i("Firebase FirebaseAuthManager Init Set loggedput false")
             liveFirebaseUser.postValue(firebaseAuth!!.currentUser)
             loggedOut.postValue(false)
             errorStatus.postValue(false)
@@ -62,6 +64,7 @@ class FirebaseAuthManager(application: Application) {
         firebaseAuth!!.signOut()
         loggedOut.postValue(true)
         errorStatus.postValue(false)
+        i("Firebase : FirebaseAuthManager loggedout value - ${loggedOut.value}")
     }
 
     fun addFirebaseStateListener(listener: FirebaseAuth.AuthStateListener) {
