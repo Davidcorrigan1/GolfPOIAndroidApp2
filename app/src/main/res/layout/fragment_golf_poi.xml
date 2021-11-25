@@ -130,29 +130,12 @@
                         app:layout_constraintVertical_bias="0.333" />
                 </LinearLayout>
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:weightSum="4">
-
-                <Button
-                    android:id="@+id/btn_choose_image"
-                    android:layout_width="170dp"
-                    android:layout_height="72dp"
-                    android:layout_margin="16dp"
-                    android:background="@color/colorAccent"
-                    android:paddingTop="8dp"
-                    android:paddingBottom="8dp"
-                    android:text="@string/button_addImage"
-                    android:textColor="@color/colorAccent"
-                    android:textSize="16sp" />
 
                 <Button
                     android:id="@+id/btnGolfPOILocation"
-                    android:layout_width="170dp"
-                    android:layout_height="72dp"
-                    android:layout_margin="16dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="45dp"
+                    android:layout_margin="8dp"
                     android:background="@color/colorAccent"
                     android:paddingTop="8dp"
                     android:paddingBottom="8dp"
@@ -160,12 +143,32 @@
                     android:text="@string/button_location"
                     android:textColor="@color/colorAccent"
                     android:textSize="16sp" />
-            </LinearLayout>
+
+                <com.google.android.gms.maps.MapView
+                    android:id="@+id/mapViewSmall"
+                    android:layout_width="match_parent"
+                    android:layout_height="170dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:layout_marginBottom="8dp" />
+
+                <Button
+                    android:id="@+id/btn_choose_image"
+                    android:layout_width="match_parent"
+                    android:layout_height="45dp"
+                    android:layout_margin="8dp"
+                    android:background="@color/colorAccent"
+                    android:paddingTop="8dp"
+                    android:paddingBottom="8dp"
+                    android:text="@string/button_addImage"
+                    android:textColor="@color/colorAccent"
+                    android:textSize="16sp" />
 
                 <ImageView
                     android:id="@+id/golfPOIImage"
                     android:layout_width="match_parent"
-                    android:layout_height="170dp"
+                    android:layout_height="225dp"
                     android:layout_marginStart="2dp"
                     android:layout_marginTop="2dp"
                     android:layout_marginEnd="2dp"

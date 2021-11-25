@@ -81,7 +81,7 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
                     boundsBuilder.include(latlng)
                     map.addMarker(
                         MarkerOptions().position(latlng).title(golfPOI.courseTitle)
-                    ).tag = golfPOI.id
+                    )?.tag = golfPOI.id
 
                 }
             }
@@ -161,7 +161,7 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
 
     override fun onMarkerClick(marker: Marker): Boolean {
         i("marker id: ${marker.tag}")
-        populateMarkerCard (marker.tag)
+        populateMarkerCard (marker.tag!!)
         return false
     }
 

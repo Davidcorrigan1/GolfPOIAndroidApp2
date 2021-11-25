@@ -1,5 +1,6 @@
 package org.wit.golfpoi.ui.addPOI
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -15,28 +16,41 @@ import androidx.fragment.app.activityViewModels
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.NavigationUI
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.Marker
+import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.snackbar.Snackbar
 import com.squareup.picasso.Picasso
 import org.wit.golfpoi.R
 import org.wit.golfpoi.databinding.FragmentGolfPoiBinding
+import org.wit.golfpoi.helpers.checkLocationPermissions
 import org.wit.golfpoi.helpers.showImagePicker
 import org.wit.golfpoi.main.MainApp
 import org.wit.golfpoi.models.GolfPOIModel
 import org.wit.golfpoi.models.Location
 import org.wit.golfpoi.ui.auth.LoggedInViewModel
+import org.wit.golfpoi.ui.mapOverview.GolfPoisOverviewMapFragmentDirections
+import timber.log.Timber
 import timber.log.Timber.i
 
 
 
-class GolfPoiFragment : Fragment() {
+class GolfPoiFragment : Fragment(), GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerClickListener {
     var golfPOI: GolfPOIModel = GolfPOIModel()
     lateinit var app: MainApp
     private lateinit var imageIntentLauncher : ActivityResultLauncher<Intent>
     private var _fragBinding: FragmentGolfPoiBinding? = null
     private val fragBinding get() = _fragBinding!!
     private val loggedInViewModel : LoggedInViewModel by activityViewModels()
-    var location = Location("Current", 52.245696, -7.139102, 15f)
+    var defaultLocation = Location("Current", 52.245696, -7.139102, 13f)
     var setProvinces : String = ""
+    lateinit var map: GoogleMap
+    lateinit var locationService: FusedLocationProviderClient
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,6 +64,9 @@ class GolfPoiFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        // Acquire reference to the location provider client
+        locationService = LocationServices.getFusedLocationProviderClient(requireActivity())
+
         // Inflate the layout for this fragment
         _fragBinding = FragmentGolfPoiBinding.inflate(inflater, container, false)
         val root = fragBinding.root
@@ -75,6 +92,7 @@ class GolfPoiFragment : Fragment() {
         fragBinding.golfPOIparPicker.minValue = 70
         fragBinding.golfPOIparPicker.maxValue = 72
 
+        // If the golfPOI has been passed in with values
         if ((golfPOI.courseTitle != "" ) ||
             (golfPOI.courseDescription != "") ||
             (golfPOI.coursePar != 0 ) ||
@@ -90,12 +108,34 @@ class GolfPoiFragment : Fragment() {
             if (golfPOI.image != Uri.EMPTY) {
                 fragBinding.btnChooseImage.setText(R.string.change_golfPOI_image)
             }
+            // If the course coordinates already set then change button text
+            if (golfPOI.lat == 0.0 && golfPOI.lng == 0.0) {
+                fragBinding.btnGolfPOILocation.setText(R.string.change_golfPOI_location)
+            }
 
             // check the current selected provence and default to that one!
             val spinnerPosition : Int = adapter.getPosition(golfPOI.courseProvince)
             spinner.setSelection(spinnerPosition)
             i("Setting the dropdown default from model value")
         }
+
+        if (golfPOI.lat == 0.00 && golfPOI.lng == 0.00) {
+            if (checkLocationPermissions(requireActivity())) {
+
+
+            }
+
+        }
+
+        fragBinding.mapViewSmall.onCreate(savedInstanceState)
+        fragBinding.mapViewSmall.getMapAsync {
+            map = it
+            configureMap(map)
+            setOnMapClickListener(map)
+
+        }
+
+
         setSpinnerListener(spinner, provinces)
         registerImagePickerCallback(fragBinding)
         setButtonListener(fragBinding)
@@ -103,9 +143,28 @@ class GolfPoiFragment : Fragment() {
         return root
     }
 
+    override fun onStop() {
+        super.onStop()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        fragBinding.mapViewSmall.onDestroy()
+    }
+
+    override fun onLowMemory() {
+        super.onLowMemory()
+        fragBinding.mapViewSmall.onLowMemory()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        fragBinding.mapViewSmall.onPause()
+    }
+
     override fun onResume() {
         super.onResume()
-
+        fragBinding.mapViewSmall.onResume()
     }
 
     companion object {
@@ -149,11 +208,11 @@ class GolfPoiFragment : Fragment() {
         // Set the listener for the button to select the location
         layout.btnGolfPOILocation.setOnClickListener {
             i ("Set Location Pressed")
-            /*if (golfPOI.lat == 0.0 && golfPOI.lng == 0.0) {
-                golfPOI.lat = location.lat
-                golfPOI.lng = location.lng
-                golfPOI.zoom = location.zoom
-            }*/
+            if (golfPOI.lat == 0.0 && golfPOI.lng == 0.0) {
+                golfPOI.lat = defaultLocation.lat
+                golfPOI.lng = defaultLocation.lng
+                golfPOI.zoom = defaultLocation.zoom
+            }
             // make sure updates to the screen are captured
             golfPOI.courseTitle = fragBinding.golfPOITitle.text.toString()
             golfPOI.courseDescription = fragBinding.golfPOIDesc.text.toString()
@@ -164,6 +223,7 @@ class GolfPoiFragment : Fragment() {
         }
 
     }
+
 
     private fun saveGolfCourseData (layout: FragmentGolfPoiBinding) {
         golfPOI.courseTitle = layout.golfPOITitle.text.toString()
@@ -229,4 +289,74 @@ class GolfPoiFragment : Fragment() {
                 }
             }
     }
+
+    override fun onMarkerDragStart(marker: Marker) {
+        val loc = LatLng(golfPOI.lat, golfPOI.lng)
+        marker.snippet = "GPS: : $loc"
+    }
+
+    override fun onMarkerDrag(marker: Marker) {
+
+
+    }
+
+    override fun onMarkerDragEnd(marker: Marker) {
+        golfPOI.lat = marker.position.latitude
+        golfPOI.lng = marker.position.longitude
+        golfPOI.zoom = map.cameraPosition.zoom
+        val loc = LatLng(golfPOI.lat, golfPOI.lng)
+        marker.snippet = "GPS: : $loc"
+    }
+
+    override fun onMarkerClick(marker: Marker): Boolean {
+        val loc = LatLng(golfPOI.lat, golfPOI.lng)
+        marker.snippet = "Title: : ${golfPOI.courseTitle}"
+        return false
+    }
+
+    private fun setOnMapClickListener(map: GoogleMap) {
+        map.setOnMapClickListener(GoogleMap.OnMapClickListener {
+            i("Set Map Clicked")
+
+            val action =
+                GolfPoiFragmentDirections.actionGolfPoiFragmentToGolfPoiSelectMapFragment(golfPOI)
+            findNavController().navigate(action)
+        })
+    }
+
+    fun configureMap(googleMap: GoogleMap) {
+        map = googleMap
+        locationUpdate(golfPOI.lat, golfPOI.lng)
+
+
+    }
+
+    @SuppressLint("MissingPermission")
+    fun doSetCurrentLocation() {
+        i("setting location from doSetLocation")
+        locationService.lastLocation.addOnSuccessListener {
+            locationUpdate(it.latitude, it.longitude)
+        }
+    }
+
+    fun locationUpdate(lat: Double, lng: Double) {
+        golfPOI.lat = lat
+        golfPOI.lng = lng
+        val loc = LatLng(golfPOI.lat, golfPOI.lng)
+        val options = MarkerOptions()
+            .title(golfPOI.courseTitle)
+            .snippet("GPS : $loc")
+            .draggable(true)
+            .position(loc)
+
+        map.addMarker(options)
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(loc, defaultLocation.zoom))
+        map.setOnMarkerDragListener(this)
+        map.setOnMarkerClickListener(this)
+
+    }
+
+
+
+
 }
