@@ -110,7 +110,7 @@ class GolfPoiFragment : Fragment(), GoogleMap.OnMarkerDragListener, GoogleMap.On
             }
             // If the course coordinates already set then change button text
             if (golfPOI.lat == 0.0 && golfPOI.lng == 0.0) {
-                fragBinding.btnGolfPOILocation.setText(R.string.change_golfPOI_location)
+                fragBinding.btnGolfPOILocation.setText(R.string.button_location)
             }
 
             // check the current selected provence and default to that one!
@@ -119,19 +119,19 @@ class GolfPoiFragment : Fragment(), GoogleMap.OnMarkerDragListener, GoogleMap.On
             i("Setting the dropdown default from model value")
         }
 
-        if (golfPOI.lat == 0.00 && golfPOI.lng == 0.00) {
-            if (checkLocationPermissions(requireActivity())) {
-
-
-            }
-
-        }
 
         fragBinding.mapViewSmall.onCreate(savedInstanceState)
         fragBinding.mapViewSmall.getMapAsync {
             map = it
             configureMap(map)
             setOnMapClickListener(map)
+
+        }
+
+        if (golfPOI.lat == 0.00 && golfPOI.lng == 0.00) {
+            if (checkLocationPermissions(requireActivity())) {
+                doSetCurrentLocation()
+            }
 
         }
 
@@ -327,8 +327,6 @@ class GolfPoiFragment : Fragment(), GoogleMap.OnMarkerDragListener, GoogleMap.On
     fun configureMap(googleMap: GoogleMap) {
         map = googleMap
         locationUpdate(golfPOI.lat, golfPOI.lng)
-
-
     }
 
     @SuppressLint("MissingPermission")

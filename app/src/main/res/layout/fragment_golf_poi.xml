@@ -140,7 +140,7 @@
                     android:paddingTop="8dp"
                     android:paddingBottom="8dp"
                     android:stateListAnimator="@null"
-                    android:text="@string/button_location"
+                    android:text="@string/change_golfPOI_location"
                     android:textColor="@color/colorAccent"
                     android:textSize="16sp" />
 
