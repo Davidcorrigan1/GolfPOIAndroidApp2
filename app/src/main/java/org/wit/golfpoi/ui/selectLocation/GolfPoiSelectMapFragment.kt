@@ -26,6 +26,7 @@ class GolfPoiSelectMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMar
     private lateinit var map: GoogleMap
     private var _fragBinding: FragmentGolfPoiSelectMapBinding? = null
     private val fragBinding get() = _fragBinding!!
+    var defaultLocation = Location("Current", 52.245696, -7.139102, 15f)
     var golfPOI = GolfPOIModel()
     var location = Location()
 
@@ -48,6 +49,9 @@ class GolfPoiSelectMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMar
         golfPOI = golfPOIBundle?.getParcelable("golfPOI")!!
         location.lng = golfPOI.lng
         location.lat = golfPOI.lat
+        if (golfPOI.zoom == 0f) {
+            golfPOI.zoom = 15f
+        }
         location.zoom = golfPOI.zoom
         location.name = golfPOI.courseTitle
         Timber.i("The bundle2: ${golfPOI}")

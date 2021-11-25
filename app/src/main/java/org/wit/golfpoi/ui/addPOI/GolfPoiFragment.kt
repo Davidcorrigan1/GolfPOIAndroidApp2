@@ -98,7 +98,7 @@ class GolfPoiFragment : Fragment() {
         }
         setSpinnerListener(spinner, provinces)
         registerImagePickerCallback(fragBinding)
-        setLocationButtonListener(fragBinding)
+        setButtonListener(fragBinding)
 
         return root
     }
@@ -139,7 +139,7 @@ class GolfPoiFragment : Fragment() {
     }
 
     // Set the listener buttons for choosing image and creating/updating the POI
-    private fun setLocationButtonListener (layout: FragmentGolfPoiBinding) {
+    private fun setButtonListener (layout: FragmentGolfPoiBinding) {
         // Listener for the Add Image button
         layout.btnChooseImage.setOnClickListener {
             showImagePicker(imageIntentLauncher)
@@ -149,11 +149,11 @@ class GolfPoiFragment : Fragment() {
         // Set the listener for the button to select the location
         layout.btnGolfPOILocation.setOnClickListener {
             i ("Set Location Pressed")
-            if (golfPOI.lat == 0.0 && golfPOI.lng == 0.0) {
+            /*if (golfPOI.lat == 0.0 && golfPOI.lng == 0.0) {
                 golfPOI.lat = location.lat
                 golfPOI.lng = location.lng
                 golfPOI.zoom = location.zoom
-            }
+            }*/
             // make sure updates to the screen are captured
             golfPOI.courseTitle = fragBinding.golfPOITitle.text.toString()
             golfPOI.courseDescription = fragBinding.golfPOIDesc.text.toString()
