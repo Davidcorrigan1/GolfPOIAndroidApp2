@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.*
 import android.widget.SearchView
+import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -43,6 +44,14 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         app = activity?.application as MainApp
+
+
+        // Disable the backpress here so user can't backpress to login screen
+        activity?.onBackPressedDispatcher?.addCallback(this,object : OnBackPressedCallback(true){
+            override fun handleOnBackPressed() {
+                i("Firebase: Doing nothing on Backpress!")
+            }
+        })
 
         setHasOptionsMenu(true)
     }
@@ -144,6 +153,7 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
             loadGolfPOIs(app.golfPOIData.getCurrentUser().id)
             return false
         } else if (item.itemId == R.id.golfLoginFragment) {
+            i("Firebase GolfPoiList Log Out")
             loggedInViewModel.logOut()
             return NavigationUI.onNavDestinationSelected(item,
                 requireView().findNavController()) || super.onOptionsItemSelected(item)

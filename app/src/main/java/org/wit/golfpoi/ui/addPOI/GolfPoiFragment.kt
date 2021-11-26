@@ -187,6 +187,7 @@ class GolfPoiFragment : Fragment(), GoogleMap.OnMarkerDragListener, GoogleMap.On
             saveGolfCourseData(fragBinding)
             return false
         } else if (item.itemId == R.id.golfLoginFragment) {
+            i("Firebase GolfPoi Log out")
             loggedInViewModel.logOut()
             return NavigationUI.onNavDestinationSelected(item,
                 requireView().findNavController()) || super.onOptionsItemSelected(item)

@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
 import androidx.lifecycle.Observer
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.activityViewModels
@@ -33,6 +34,7 @@ class GolfLoginFragment : Fragment() {
         super.onCreate(savedInstanceState)
         app = activity?.application as MainApp
         i("Firebase - onCreate Entered")
+
     }
 
     override fun onCreateView(
@@ -41,7 +43,7 @@ class GolfLoginFragment : Fragment() {
     ): View? {
 
         _fragBinding = FragmentGolfLoginBinding.inflate(inflater, container, false)
-        val root = fragBinding?.root
+        val root = fragBinding.root
 
         i("Firebase - onCreateView Entered")
 
@@ -54,13 +56,6 @@ class GolfLoginFragment : Fragment() {
                 view?.post { findNavController().navigate(R.id.action_golfLoginFragment_to_golfPoiListFragment)}
             }
         }
-
-        loginViewModel.firebaseAuthManager.loggedOut.observe(viewLifecycleOwner, Observer {
-                loggedOut -> if (loggedOut == false) {
-            i("Firebase logged out Checked")
-            i("Firebase loggedOut Value: $loggedOut")
-            view?.post { findNavController().navigate(R.id.action_golfLoginFragment_to_golfPoiListFragment)}
-        }})
 
         // Setting up listeners
         setLoginButtonListener(fragBinding)
@@ -84,8 +79,6 @@ class GolfLoginFragment : Fragment() {
         i("Firebase - onResume Entered")
         loginViewModel.firebaseAuthManager.errorStatus.observe(viewLifecycleOwner, Observer
         { status -> checkStatus(status) })
-
-
 
     }
 
@@ -138,6 +131,7 @@ class GolfLoginFragment : Fragment() {
         }
     }
 
+    // Define the Register Button callback
     fun setRegisterButtonListener(layout: FragmentGolfLoginBinding) {
         layout.btnRegister.setOnClickListener {
             i("Sending user to register")

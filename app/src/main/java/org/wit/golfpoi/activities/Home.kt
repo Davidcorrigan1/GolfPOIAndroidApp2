@@ -3,6 +3,7 @@ package org.wit.golfpoi.activities
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
@@ -18,6 +19,9 @@ import org.wit.golfpoi.main.MainApp
 import org.wit.golfpoi.ui.auth.LoggedInViewModel
 import androidx.lifecycle.Observer
 import androidx.navigation.NavArgument
+import androidx.navigation.NavDeepLinkBuilder
+import org.wit.golfpoi.ui.auth.GolfLoginFragment
+import timber.log.Timber.i
 
 
 class Home : AppCompatActivity() {
@@ -48,14 +52,6 @@ class Home : AppCompatActivity() {
         val navView = homeBinding.navView
         navView.setupWithNavController(navController)
 
-        navController.addOnDestinationChangedListener { _, destination, arguments ->
-           when(destination.id) {
-               R.id.golfLoginFragment -> {
-                   loggedInViewModel.logOut()
-               }
-            }
-        }
-
     }
 
     override fun onStart() {
@@ -82,6 +78,18 @@ class Home : AppCompatActivity() {
         var headerView = homeBinding.navView.getHeaderView(0)
         navHeaderBinding = NavHeaderBinding.bind(headerView)
         navHeaderBinding.navHeaderTextView.text = currentUser.email
+    }
+
+    // Triggered from the nav_drawer_menu
+    fun signOut(item: MenuItem) {
+        i("Firebase Nav Drawer log out")
+        loggedInViewModel.logOut()
+        val pendingIntent = NavDeepLinkBuilder(this.applicationContext)
+            .setGraph(R.navigation.main_navigation)
+            .setDestination(R.id.golfLoginFragment)
+            .createPendingIntent()
+        pendingIntent.send()
+
     }
 
 }
