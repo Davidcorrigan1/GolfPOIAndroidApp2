@@ -20,7 +20,6 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
@@ -34,8 +33,6 @@ import org.wit.golfpoi.main.MainApp
 import org.wit.golfpoi.models.GolfPOIModel
 import org.wit.golfpoi.models.Location
 import org.wit.golfpoi.ui.auth.LoggedInViewModel
-import org.wit.golfpoi.ui.mapOverview.GolfPoisOverviewMapFragmentDirections
-import timber.log.Timber
 import timber.log.Timber.i
 
 
@@ -108,10 +105,6 @@ class GolfPoiFragment : Fragment(), GoogleMap.OnMarkerDragListener, GoogleMap.On
             if (golfPOI.image != Uri.EMPTY) {
                 fragBinding.btnChooseImage.setText(R.string.change_golfPOI_image)
             }
-            // If the course coordinates already set then change button text
-            if (golfPOI.lat == 0.0 && golfPOI.lng == 0.0) {
-                fragBinding.btnGolfPOILocation.setText(R.string.button_location)
-            }
 
             // check the current selected provence and default to that one!
             val spinnerPosition : Int = adapter.getPosition(golfPOI.courseProvince)
@@ -138,7 +131,7 @@ class GolfPoiFragment : Fragment(), GoogleMap.OnMarkerDragListener, GoogleMap.On
 
         setSpinnerListener(spinner, provinces)
         registerImagePickerCallback(fragBinding)
-        setButtonListener(fragBinding)
+        setImageButtonListener(fragBinding)
 
         return root
     }
@@ -199,29 +192,12 @@ class GolfPoiFragment : Fragment(), GoogleMap.OnMarkerDragListener, GoogleMap.On
     }
 
     // Set the listener buttons for choosing image and creating/updating the POI
-    private fun setButtonListener (layout: FragmentGolfPoiBinding) {
+    private fun setImageButtonListener (layout: FragmentGolfPoiBinding) {
         // Listener for the Add Image button
         layout.btnChooseImage.setOnClickListener {
             showImagePicker(imageIntentLauncher)
         }
 
-
-        // Set the listener for the button to select the location
-        layout.btnGolfPOILocation.setOnClickListener {
-            i ("Set Location Pressed")
-            if (golfPOI.lat == 0.0 && golfPOI.lng == 0.0) {
-                golfPOI.lat = defaultLocation.lat
-                golfPOI.lng = defaultLocation.lng
-                golfPOI.zoom = defaultLocation.zoom
-            }
-            // make sure updates to the screen are captured
-            golfPOI.courseTitle = fragBinding.golfPOITitle.text.toString()
-            golfPOI.courseDescription = fragBinding.golfPOIDesc.text.toString()
-            golfPOI.courseProvince = setProvinces
-            golfPOI.coursePar = fragBinding.golfPOIparPicker.value
-            val action = GolfPoiFragmentDirections.actionGolfPoiFragmentToGolfPoiSelectMapFragment(golfPOI)
-            findNavController().navigate(action)
-        }
 
     }
 
@@ -318,6 +294,17 @@ class GolfPoiFragment : Fragment(), GoogleMap.OnMarkerDragListener, GoogleMap.On
     private fun setOnMapClickListener(map: GoogleMap) {
         map.setOnMapClickListener(GoogleMap.OnMapClickListener {
             i("Set Map Clicked")
+
+            if (golfPOI.lat == 0.0 && golfPOI.lng == 0.0) {
+                golfPOI.lat = defaultLocation.lat
+                golfPOI.lng = defaultLocation.lng
+                golfPOI.zoom = defaultLocation.zoom
+            }
+            // make sure updates to the screen are captured
+            golfPOI.courseTitle = fragBinding.golfPOITitle.text.toString()
+            golfPOI.courseDescription = fragBinding.golfPOIDesc.text.toString()
+            golfPOI.courseProvince = setProvinces
+            golfPOI.coursePar = fragBinding.golfPOIparPicker.value
 
             val action =
                 GolfPoiFragmentDirections.actionGolfPoiFragmentToGolfPoiSelectMapFragment(golfPOI)
