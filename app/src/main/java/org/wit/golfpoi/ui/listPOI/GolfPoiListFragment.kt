@@ -19,6 +19,7 @@ import androidx.navigation.ui.NavigationUI
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.auth.FirebaseAuth
 import org.wit.golfpoi.R
 import org.wit.golfpoi.adapter.GolfPOIAdapter
 import org.wit.golfpoi.adapter.GolfPOIListener
@@ -34,6 +35,7 @@ import timber.log.Timber.i
 class GolfPoiListFragment : Fragment(), GolfPOIListener{
     private lateinit var golfPoiListViewModel : GolfPoiListViewModel
     private val loggedInViewModel : LoggedInViewModel by activityViewModels()
+    private val loginViewModel : LoginViewModel by activityViewModels()
     lateinit var app: MainApp
     private lateinit var refreshIntentLauncher : ActivityResultLauncher<Intent>
     private var _fragBinding: FragmentGolfPoiListBinding? = null
@@ -45,8 +47,7 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
         super.onCreate(savedInstanceState)
         app = activity?.application as MainApp
 
-
-        // Disable the backpress here so user can't backpress to login screen
+        // Disable the back button here so user can't backpress to login screen
         activity?.onBackPressedDispatcher?.addCallback(this,object : OnBackPressedCallback(true){
             override fun handleOnBackPressed() {
                 i("Firebase: Doing nothing on Backpress!")
@@ -86,6 +87,7 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
         val itemTouchDeleteHelper = ItemTouchHelper(swipeDeleteHandler)
         itemTouchDeleteHelper.attachToRecyclerView(fragBinding.recyclerView)
 
+        loginViewModel.addFirebaseStateListener(authStateListener)
         registerRefreshCallback(fragBinding)
 
         return root
@@ -155,8 +157,7 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
         } else if (item.itemId == R.id.golfLoginFragment) {
             i("Firebase GolfPoiList Log Out")
             loggedInViewModel.logOut()
-            return NavigationUI.onNavDestinationSelected(item,
-                requireView().findNavController()) || super.onOptionsItemSelected(item)
+            return false
         } else {
             return NavigationUI.onNavDestinationSelected(item,
                    requireView().findNavController()) || super.onOptionsItemSelected(item)
@@ -202,4 +203,12 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
         fragBinding.recyclerView.adapter?.notifyDataSetChanged()
     }
 
+    // defining listener callback to check user authorisation
+    val authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
+        val firebaseUser = firebaseAuth.currentUser
+        if (firebaseUser == null) {
+            i("Firebase authStateLister Called from PoiList and not logged on")
+            view?.post { findNavController().navigate(R.id.action_golfPoiListFragment_to_golfLoginFragment)}
+        }
+    }
 }

@@ -47,7 +47,7 @@ class GolfLoginFragment : Fragment() {
 
         i("Firebase - onCreateView Entered")
 
-        // defining listener callback
+        // defining listener callback to check user authorisation
         val authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
             val firebaseUser = firebaseAuth.currentUser
             if (firebaseUser != null) {

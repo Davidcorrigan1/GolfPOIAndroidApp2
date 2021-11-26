@@ -1,11 +1,8 @@
 package org.wit.golfpoi.activities
 
-import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.MenuItem
-import android.view.View
-import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.ViewModelProvider
@@ -15,12 +12,10 @@ import com.google.firebase.auth.FirebaseUser
 import org.wit.golfpoi.R
 import org.wit.golfpoi.databinding.HomeBinding
 import org.wit.golfpoi.databinding.NavHeaderBinding
-import org.wit.golfpoi.main.MainApp
 import org.wit.golfpoi.ui.auth.LoggedInViewModel
 import androidx.lifecycle.Observer
-import androidx.navigation.NavArgument
 import androidx.navigation.NavDeepLinkBuilder
-import org.wit.golfpoi.ui.auth.GolfLoginFragment
+import org.wit.golfpoi.ui.auth.LoginViewModel
 import timber.log.Timber.i
 
 
@@ -31,11 +26,13 @@ class Home : AppCompatActivity() {
     private lateinit var navHeaderBinding : NavHeaderBinding
     private lateinit var appBarConfiguration: AppBarConfiguration
     private lateinit var loggedInViewModel : LoggedInViewModel
+    private lateinit var loginViewModel : LoginViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         loggedInViewModel = ViewModelProvider(this).get(LoggedInViewModel::class.java)
+        loginViewModel = ViewModelProvider(this).get(LoginViewModel::class.java)
         homeBinding = HomeBinding.inflate(layoutInflater)
         setContentView(homeBinding.root)
         drawerLayout = homeBinding.drawerLayout

@@ -24,6 +24,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.snackbar.Snackbar
+import com.google.firebase.auth.FirebaseAuth
 import com.squareup.picasso.Picasso
 import org.wit.golfpoi.R
 import org.wit.golfpoi.databinding.FragmentGolfPoiBinding
@@ -33,6 +34,7 @@ import org.wit.golfpoi.main.MainApp
 import org.wit.golfpoi.models.GolfPOIModel
 import org.wit.golfpoi.models.Location
 import org.wit.golfpoi.ui.auth.LoggedInViewModel
+import org.wit.golfpoi.ui.auth.LoginViewModel
 import timber.log.Timber.i
 
 
@@ -44,6 +46,7 @@ class GolfPoiFragment : Fragment(), GoogleMap.OnMarkerDragListener, GoogleMap.On
     private var _fragBinding: FragmentGolfPoiBinding? = null
     private val fragBinding get() = _fragBinding!!
     private val loggedInViewModel : LoggedInViewModel by activityViewModels()
+    private val loginViewModel : LoginViewModel by activityViewModels()
     var defaultLocation = Location("Current", 52.245696, -7.139102, 13f)
     var setProvinces : String = ""
     lateinit var map: GoogleMap
@@ -132,6 +135,7 @@ class GolfPoiFragment : Fragment(), GoogleMap.OnMarkerDragListener, GoogleMap.On
         setSpinnerListener(spinner, provinces)
         registerImagePickerCallback(fragBinding)
         setImageButtonListener(fragBinding)
+        loginViewModel.addFirebaseStateListener(authStateListener)
 
         return root
     }
@@ -182,8 +186,7 @@ class GolfPoiFragment : Fragment(), GoogleMap.OnMarkerDragListener, GoogleMap.On
         } else if (item.itemId == R.id.golfLoginFragment) {
             i("Firebase GolfPoi Log out")
             loggedInViewModel.logOut()
-            return NavigationUI.onNavDestinationSelected(item,
-                requireView().findNavController()) || super.onOptionsItemSelected(item)
+            return false
         } else {
             return NavigationUI.onNavDestinationSelected(
                 item,
@@ -197,39 +200,17 @@ class GolfPoiFragment : Fragment(), GoogleMap.OnMarkerDragListener, GoogleMap.On
         layout.btnChooseImage.setOnClickListener {
             showImagePicker(imageIntentLauncher)
         }
-
-
     }
 
-
-    private fun saveGolfCourseData (layout: FragmentGolfPoiBinding) {
-        golfPOI.courseTitle = layout.golfPOITitle.text.toString()
-        golfPOI.courseDescription = layout.golfPOIDesc.text.toString()
-        golfPOI.courseProvince = setProvinces
-        golfPOI.coursePar = layout.golfPOIparPicker.value
-
-        i("Setting the model province to $setProvinces")
-
-        if (golfPOI.courseTitle.isNotEmpty() && golfPOI.courseDescription.isNotEmpty()) {
-            if (app.golfPOIData.findPOI(golfPOI.id) != null) {
-                i("save Button Pressed ${golfPOI.courseTitle} and ${golfPOI.courseDescription}")
-                i("Course being saved: $golfPOI")
-                app.golfPOIData.updatePOI(golfPOI.copy())
-            } else {
-                i("add Button Pressed ${golfPOI.courseTitle} and ${golfPOI.courseDescription}")
-                app.golfPOIData.createPOI(golfPOI.copy())
-            }
-            val navController = view?.findNavController()
-            navController?.navigate(R.id.action_golfPoiFragment_to_golfPoiListFragment)
-
-        } else {
-            view?.let {
-                Snackbar
-                    .make(it, R.string.prompt_addGolfPOI, Snackbar.LENGTH_LONG)
-                    .show()
-            }
+    // defining listener callback to check user authorisation
+    val authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
+        val firebaseUser = firebaseAuth.currentUser
+        if (firebaseUser == null) {
+            i("Firebase authStateLister Called from PoiList and not logged on")
+            view?.post { findNavController().navigate(R.id.action_golfPoiFragment_to_golfLoginFragment)}
         }
     }
+
 
     private fun setSpinnerListener (spinner: Spinner, provinces: Array<String>) {
         // Listener for the spinner dropdown for provinces
@@ -340,6 +321,35 @@ class GolfPoiFragment : Fragment(), GoogleMap.OnMarkerDragListener, GoogleMap.On
         map.setOnMarkerDragListener(this)
         map.setOnMarkerClickListener(this)
 
+    }
+
+    private fun saveGolfCourseData (layout: FragmentGolfPoiBinding) {
+        golfPOI.courseTitle = layout.golfPOITitle.text.toString()
+        golfPOI.courseDescription = layout.golfPOIDesc.text.toString()
+        golfPOI.courseProvince = setProvinces
+        golfPOI.coursePar = layout.golfPOIparPicker.value
+
+        i("Setting the model province to $setProvinces")
+
+        if (golfPOI.courseTitle.isNotEmpty() && golfPOI.courseDescription.isNotEmpty()) {
+            if (app.golfPOIData.findPOI(golfPOI.id) != null) {
+                i("save Button Pressed ${golfPOI.courseTitle} and ${golfPOI.courseDescription}")
+                i("Course being saved: $golfPOI")
+                app.golfPOIData.updatePOI(golfPOI.copy())
+            } else {
+                i("add Button Pressed ${golfPOI.courseTitle} and ${golfPOI.courseDescription}")
+                app.golfPOIData.createPOI(golfPOI.copy())
+            }
+            val navController = view?.findNavController()
+            navController?.navigate(R.id.action_golfPoiFragment_to_golfPoiListFragment)
+
+        } else {
+            view?.let {
+                Snackbar
+                    .make(it, R.string.prompt_addGolfPOI, Snackbar.LENGTH_LONG)
+                    .show()
+            }
+        }
     }
 
 
