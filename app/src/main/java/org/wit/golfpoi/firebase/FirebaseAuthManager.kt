@@ -71,4 +71,8 @@ class FirebaseAuthManager(application: Application) {
         firebaseAuth!!.addAuthStateListener(listener)
 
     }
+
+    fun removeFirebaseStateListener(listener: FirebaseAuth.AuthStateListener) {
+        firebaseAuth!!.removeAuthStateListener(listener)
+    }
 }

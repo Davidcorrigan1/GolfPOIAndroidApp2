@@ -98,10 +98,16 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
         golfPoiListViewModel = ViewModelProvider(activity as AppCompatActivity).get(GolfPoiListViewModel::class.java)
     }
 
+    override fun onPause() {
+        super.onPause()
+        //loginViewModel.removeFirebaseStateListener(authStateListener)
+    }
+
     override fun onResume() {
         super.onResume()
         i("fragment resuming")
         i("${app.golfPOIData.findAllPOIs()}")
+        //loginViewModel.addFirebaseStateListener(authStateListener)
         fragBinding.recyclerView.adapter?.notifyDataSetChanged()
     }
 

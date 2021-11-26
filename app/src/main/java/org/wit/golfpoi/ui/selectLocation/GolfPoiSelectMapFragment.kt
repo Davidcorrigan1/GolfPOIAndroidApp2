@@ -94,7 +94,6 @@ class GolfPoiSelectMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMar
 
     override fun onMarkerDrag(marker: Marker) {
 
-
     }
 
     override fun onMarkerDragEnd(marker: Marker) {

@@ -19,4 +19,8 @@ class LoginViewModel (app: Application) : AndroidViewModel(app) {
     fun addFirebaseStateListener(listener: FirebaseAuth.AuthStateListener){
         firebaseAuthManager.addFirebaseStateListener(listener)
     }
+
+    fun removeFirebaseStateListener(listener: FirebaseAuth.AuthStateListener) {
+        firebaseAuthManager.removeFirebaseStateListener(listener)
+    }
 }

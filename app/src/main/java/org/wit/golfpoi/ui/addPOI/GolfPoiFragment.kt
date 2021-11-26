@@ -20,6 +20,7 @@ import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
@@ -39,10 +40,11 @@ import timber.log.Timber.i
 
 
 
-class GolfPoiFragment : Fragment(), GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerClickListener {
+class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerClickListener {
     var golfPOI: GolfPOIModel = GolfPOIModel()
     lateinit var app: MainApp
     private lateinit var imageIntentLauncher : ActivityResultLauncher<Intent>
+    private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
     private var _fragBinding: FragmentGolfPoiBinding? = null
     private val fragBinding get() = _fragBinding!!
     private val loggedInViewModel : LoggedInViewModel by activityViewModels()
@@ -93,49 +95,27 @@ class GolfPoiFragment : Fragment(), GoogleMap.OnMarkerDragListener, GoogleMap.On
         fragBinding.golfPOIparPicker.maxValue = 72
 
         // If the golfPOI has been passed in with values
-        if ((golfPOI.courseTitle != "" ) ||
-            (golfPOI.courseDescription != "") ||
-            (golfPOI.coursePar != 0 ) ||
-            (golfPOI.lng.equals(0.0) || golfPOI.lat.equals(0.0)) ||
-            (golfPOI.image != Uri.EMPTY)){
-            i("golfPOI.courseTitle:  ${golfPOI.courseTitle}")
-            fragBinding.golfPOITitle.setText(golfPOI.courseTitle)
-            fragBinding.golfPOIDesc.setText(golfPOI.courseDescription)
-            fragBinding.golfPOIparPicker.value = golfPOI.coursePar
-            Picasso.get().load(golfPOI.image).into(fragBinding.golfPOIImage)
-
-            // If coming from the list of courses and Course image already set, change button text
-            if (golfPOI.image != Uri.EMPTY) {
-                fragBinding.btnChooseImage.setText(R.string.change_golfPOI_image)
-            }
-
-            // check the current selected provence and default to that one!
-            val spinnerPosition : Int = adapter.getPosition(golfPOI.courseProvince)
-            spinner.setSelection(spinnerPosition)
-            i("Setting the dropdown default from model value")
+        if ((golfPOI.courseTitle != "" ) || (golfPOI.courseDescription != "")) {
+            setScreenFromPassData(adapter, spinner)
         }
 
-
-        fragBinding.mapViewSmall.onCreate(savedInstanceState)
-        fragBinding.mapViewSmall.getMapAsync {
-            map = it
-            configureMap(map)
-            setOnMapClickListener(map)
-
-        }
-
-        if (golfPOI.lat == 0.00 && golfPOI.lng == 0.00) {
-            if (checkLocationPermissions(requireActivity())) {
-                doSetCurrentLocation()
-            }
-
-        }
-
-
+        permissionLauncherCallback()
         setSpinnerListener(spinner, provinces)
         registerImagePickerCallback(fragBinding)
         setImageButtonListener(fragBinding)
         loginViewModel.addFirebaseStateListener(authStateListener)
+
+        if (golfPOI.lat == 0.00 && golfPOI.lng == 0.00) {
+            if (checkLocationPermissions(requireActivity())) {
+                i("Current Location setting")
+                doSetCurrentLocation()
+            }
+            golfPOI.lat = defaultLocation.lat
+            golfPOI.lng = defaultLocation.lng
+        }
+
+        fragBinding.mapViewSmall.onCreate(savedInstanceState)
+        fragBinding.mapViewSmall.getMapAsync(this)
 
         return root
     }
@@ -156,11 +136,13 @@ class GolfPoiFragment : Fragment(), GoogleMap.OnMarkerDragListener, GoogleMap.On
 
     override fun onPause() {
         super.onPause()
+        //loginViewModel.removeFirebaseStateListener(authStateListener)
         fragBinding.mapViewSmall.onPause()
     }
 
     override fun onResume() {
         super.onResume()
+        //loginViewModel.addFirebaseStateListener(authStateListener)
         fragBinding.mapViewSmall.onResume()
     }
 
@@ -206,11 +188,17 @@ class GolfPoiFragment : Fragment(), GoogleMap.OnMarkerDragListener, GoogleMap.On
     val authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
         val firebaseUser = firebaseAuth.currentUser
         if (firebaseUser == null) {
-            i("Firebase authStateLister Called from PoiList and not logged on")
+            i("Firebase authStateLister Called from PoiAdd and not logged on")
             view?.post { findNavController().navigate(R.id.action_golfPoiFragment_to_golfLoginFragment)}
         }
     }
 
+    // Configuring the map when it ready to display
+    override fun onMapReady(googleMap: GoogleMap) {
+        map = googleMap
+        configureMap(map)
+        setOnMapClickListener(map)
+    }
 
     private fun setSpinnerListener (spinner: Spinner, provinces: Array<String>) {
         // Listener for the spinner dropdown for provinces
@@ -248,6 +236,42 @@ class GolfPoiFragment : Fragment(), GoogleMap.OnMarkerDragListener, GoogleMap.On
             }
     }
 
+    // Callback for permission requester
+    private fun permissionLauncherCallback() {
+        i("permission check called")
+        requestPermissionLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestPermission())
+            { isGranted: Boolean ->
+                if (isGranted) {
+                    doSetCurrentLocation()
+                } else {
+                    locationUpdate(defaultLocation.lat, defaultLocation.lng)
+                }
+            }
+    }
+
+    private fun setOnMapClickListener(map: GoogleMap) {
+        map.setOnMapClickListener(GoogleMap.OnMapClickListener {
+            i("Set Map Clicked")
+
+            if (golfPOI.lat == 0.0 && golfPOI.lng == 0.0) {
+                golfPOI.lat = defaultLocation.lat
+                golfPOI.lng = defaultLocation.lng
+                golfPOI.zoom = defaultLocation.zoom
+            }
+            // make sure updates to the screen are captured
+            golfPOI.courseTitle = fragBinding.golfPOITitle.text.toString()
+            golfPOI.courseDescription = fragBinding.golfPOIDesc.text.toString()
+            golfPOI.courseProvince = setProvinces
+            golfPOI.coursePar = fragBinding.golfPOIparPicker.value
+
+            val action =
+                GolfPoiFragmentDirections.actionGolfPoiFragmentToGolfPoiSelectMapFragment(golfPOI)
+            findNavController().navigate(action)
+        })
+    }
+
+
     override fun onMarkerDragStart(marker: Marker) {
         val loc = LatLng(golfPOI.lat, golfPOI.lng)
         marker.snippet = "GPS: : $loc"
@@ -272,27 +296,6 @@ class GolfPoiFragment : Fragment(), GoogleMap.OnMarkerDragListener, GoogleMap.On
         return false
     }
 
-    private fun setOnMapClickListener(map: GoogleMap) {
-        map.setOnMapClickListener(GoogleMap.OnMapClickListener {
-            i("Set Map Clicked")
-
-            if (golfPOI.lat == 0.0 && golfPOI.lng == 0.0) {
-                golfPOI.lat = defaultLocation.lat
-                golfPOI.lng = defaultLocation.lng
-                golfPOI.zoom = defaultLocation.zoom
-            }
-            // make sure updates to the screen are captured
-            golfPOI.courseTitle = fragBinding.golfPOITitle.text.toString()
-            golfPOI.courseDescription = fragBinding.golfPOIDesc.text.toString()
-            golfPOI.courseProvince = setProvinces
-            golfPOI.coursePar = fragBinding.golfPOIparPicker.value
-
-            val action =
-                GolfPoiFragmentDirections.actionGolfPoiFragmentToGolfPoiSelectMapFragment(golfPOI)
-            findNavController().navigate(action)
-        })
-    }
-
     fun configureMap(googleMap: GoogleMap) {
         map = googleMap
         locationUpdate(golfPOI.lat, golfPOI.lng)
@@ -300,12 +303,14 @@ class GolfPoiFragment : Fragment(), GoogleMap.OnMarkerDragListener, GoogleMap.On
 
     @SuppressLint("MissingPermission")
     fun doSetCurrentLocation() {
-        i("setting location from doSetLocation")
+        i("Current Location -setting location from doSetLocation")
         locationService.lastLocation.addOnSuccessListener {
+            i("Current Location lat lng in doSetCurrentListener")
             locationUpdate(it.latitude, it.longitude)
         }
     }
 
+    // Update the Marker location on the map and move focus
     fun locationUpdate(lat: Double, lng: Double) {
         golfPOI.lat = lat
         golfPOI.lng = lng
@@ -320,9 +325,9 @@ class GolfPoiFragment : Fragment(), GoogleMap.OnMarkerDragListener, GoogleMap.On
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(loc, defaultLocation.zoom))
         map.setOnMarkerDragListener(this)
         map.setOnMarkerClickListener(this)
-
     }
 
+    // Save the screen data to the golfPOI object
     private fun saveGolfCourseData (layout: FragmentGolfPoiBinding) {
         golfPOI.courseTitle = layout.golfPOITitle.text.toString()
         golfPOI.courseDescription = layout.golfPOIDesc.text.toString()
@@ -352,7 +357,23 @@ class GolfPoiFragment : Fragment(), GoogleMap.OnMarkerDragListener, GoogleMap.On
         }
     }
 
+    fun setScreenFromPassData(adapter: ArrayAdapter<String>, spinner: Spinner) {
+        i("golfPOI.courseTitle:  ${golfPOI.courseTitle}")
+        fragBinding.golfPOITitle.setText(golfPOI.courseTitle)
+        fragBinding.golfPOIDesc.setText(golfPOI.courseDescription)
 
+        fragBinding.golfPOIparPicker.value = golfPOI.coursePar
+        Picasso.get().load(golfPOI.image).into(fragBinding.golfPOIImage)
 
+        // If coming from the list of courses and Course image already set, change button text
+        if (golfPOI.image != Uri.EMPTY) {
+            fragBinding.btnChooseImage.setText(R.string.change_golfPOI_image)
+        }
+
+        // check the current selected provence and default to that one!
+        val spinnerPosition : Int = adapter.getPosition(golfPOI.courseProvince)
+        spinner.setSelection(spinnerPosition)
+
+    }
 
 }
