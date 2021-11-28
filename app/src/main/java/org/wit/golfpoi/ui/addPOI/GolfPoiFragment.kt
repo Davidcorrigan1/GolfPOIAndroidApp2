@@ -105,15 +105,6 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
         setImageButtonListener(fragBinding)
         loginViewModel.addFirebaseStateListener(authStateListener)
 
-        if (golfPOI.lat == 0.00 && golfPOI.lng == 0.00) {
-            if (checkLocationPermissions(requireActivity())) {
-                i("Current Location setting")
-                doSetCurrentLocation()
-            }
-            golfPOI.lat = defaultLocation.lat
-            golfPOI.lng = defaultLocation.lng
-        }
-
         fragBinding.mapViewSmall.onCreate(savedInstanceState)
         fragBinding.mapViewSmall.getMapAsync(this)
 
@@ -243,6 +234,7 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
             registerForActivityResult(ActivityResultContracts.RequestPermission())
             { isGranted: Boolean ->
                 if (isGranted) {
+                    i("Current Location setting 246")
                     doSetCurrentLocation()
                 } else {
                     locationUpdate(defaultLocation.lat, defaultLocation.lng)
@@ -298,7 +290,19 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
 
     fun configureMap(googleMap: GoogleMap) {
         map = googleMap
-        locationUpdate(golfPOI.lat, golfPOI.lng)
+
+        if (golfPOI.lat == 0.00 && golfPOI.lng == 0.00) {
+            if (checkLocationPermissions(requireActivity())) {
+                i("Current Location setting 296")
+                doSetCurrentLocation()
+            } else {
+                golfPOI.lat = defaultLocation.lat
+                golfPOI.lng = defaultLocation.lng
+                locationUpdate(golfPOI.lat, golfPOI.lng)
+            }
+        } else {
+            locationUpdate(golfPOI.lat, golfPOI.lng)
+        }
     }
 
     @SuppressLint("MissingPermission")
@@ -306,7 +310,12 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
         i("Current Location -setting location from doSetLocation")
         locationService.lastLocation.addOnSuccessListener {
             i("Current Location lat lng in doSetCurrentListener")
-            locationUpdate(it.latitude, it.longitude)
+            if(it == null) {
+                i("Current Location - last known location not found")
+                locationUpdate(defaultLocation.lat, defaultLocation.lng)
+            } else {
+                locationUpdate(it.latitude, it.longitude)
+            }
         }
     }
 
