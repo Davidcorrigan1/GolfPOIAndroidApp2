@@ -6,4 +6,6 @@ import com.google.android.gms.maps.GoogleMap
 
 class GolfPoiFragmentViewModel  (application: Application) : AndroidViewModel(application) {
 
+
+
 }

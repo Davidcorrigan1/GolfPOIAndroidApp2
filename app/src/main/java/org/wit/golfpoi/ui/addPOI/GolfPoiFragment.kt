@@ -17,6 +17,8 @@ import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.NavigationUI
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -30,6 +32,7 @@ import com.squareup.picasso.Picasso
 import org.wit.golfpoi.R
 import org.wit.golfpoi.databinding.FragmentGolfPoiBinding
 import org.wit.golfpoi.helpers.checkLocationPermissions
+import org.wit.golfpoi.helpers.createDefaultLocationRequest
 import org.wit.golfpoi.helpers.showImagePicker
 import org.wit.golfpoi.main.MainApp
 import org.wit.golfpoi.models.GolfPOIModel
@@ -53,6 +56,7 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
     var setProvinces : String = ""
     lateinit var map: GoogleMap
     lateinit var locationService: FusedLocationProviderClient
+    val locationRequest = createDefaultLocationRequest()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -127,14 +131,13 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
 
     override fun onPause() {
         super.onPause()
-        //loginViewModel.removeFirebaseStateListener(authStateListener)
         fragBinding.mapViewSmall.onPause()
     }
 
     override fun onResume() {
         super.onResume()
-        //loginViewModel.addFirebaseStateListener(authStateListener)
         fragBinding.mapViewSmall.onResume()
+        doRestartLocationUpdates()
     }
 
     companion object {
@@ -318,6 +321,23 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
             }
         }
     }
+
+    @SuppressLint("MissingPermission")
+    fun doRestartLocationUpdates() {
+        var locationCallback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult?) {
+                if (locationResult != null && locationResult.locations != null) {
+                    val l = locationResult.locations.last()
+                    locationUpdate(l.latitude, l.longitude)
+                }
+            }
+        }
+        if (golfPOI.lat == 0.0 && golfPOI.lng == 0.0) {
+            locationService.requestLocationUpdates(locationRequest, locationCallback, null)
+        }
+    }
+
+
 
     // Update the Marker location on the map and move focus
     fun locationUpdate(lat: Double, lng: Double) {
