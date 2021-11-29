@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.*
 import android.widget.SearchView
+import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
@@ -18,6 +19,7 @@ import androidx.navigation.ui.NavigationUI
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.auth.FirebaseAuth
 import org.wit.golfpoi.R
 import org.wit.golfpoi.adapter.GolfPOIAdapter
 import org.wit.golfpoi.adapter.GolfPOIListener
@@ -33,6 +35,7 @@ import timber.log.Timber.i
 class GolfPoiListFragment : Fragment(), GolfPOIListener{
     private lateinit var golfPoiListViewModel : GolfPoiListViewModel
     private val loggedInViewModel : LoggedInViewModel by activityViewModels()
+    private val loginViewModel : LoginViewModel by activityViewModels()
     lateinit var app: MainApp
     private lateinit var refreshIntentLauncher : ActivityResultLauncher<Intent>
     private var _fragBinding: FragmentGolfPoiListBinding? = null
@@ -43,6 +46,13 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         app = activity?.application as MainApp
+
+        // Disable the back button here so user can't backpress to login screen
+        activity?.onBackPressedDispatcher?.addCallback(this,object : OnBackPressedCallback(true){
+            override fun handleOnBackPressed() {
+                i("Firebase: Doing nothing on Backpress!")
+            }
+        })
 
         setHasOptionsMenu(true)
     }
@@ -77,6 +87,7 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
         val itemTouchDeleteHelper = ItemTouchHelper(swipeDeleteHandler)
         itemTouchDeleteHelper.attachToRecyclerView(fragBinding.recyclerView)
 
+        loginViewModel.addFirebaseStateListener(authStateListener)
         registerRefreshCallback(fragBinding)
 
         return root
@@ -87,10 +98,16 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
         golfPoiListViewModel = ViewModelProvider(activity as AppCompatActivity).get(GolfPoiListViewModel::class.java)
     }
 
+    override fun onPause() {
+        super.onPause()
+        //loginViewModel.removeFirebaseStateListener(authStateListener)
+    }
+
     override fun onResume() {
         super.onResume()
         i("fragment resuming")
         i("${app.golfPOIData.findAllPOIs()}")
+        //loginViewModel.addFirebaseStateListener(authStateListener)
         fragBinding.recyclerView.adapter?.notifyDataSetChanged()
     }
 
@@ -144,9 +161,9 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
             loadGolfPOIs(app.golfPOIData.getCurrentUser().id)
             return false
         } else if (item.itemId == R.id.golfLoginFragment) {
+            i("Firebase GolfPoiList Log Out")
             loggedInViewModel.logOut()
-            return NavigationUI.onNavDestinationSelected(item,
-                requireView().findNavController()) || super.onOptionsItemSelected(item)
+            return false
         } else {
             return NavigationUI.onNavDestinationSelected(item,
                    requireView().findNavController()) || super.onOptionsItemSelected(item)
@@ -192,4 +209,12 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
         fragBinding.recyclerView.adapter?.notifyDataSetChanged()
     }
 
+    // defining listener callback to check user authorisation
+    val authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
+        val firebaseUser = firebaseAuth.currentUser
+        if (firebaseUser == null) {
+            i("Firebase authStateLister Called from PoiList and not logged on")
+            view?.post { findNavController().navigate(R.id.action_golfPoiListFragment_to_golfLoginFragment)}
+        }
+    }
 }
