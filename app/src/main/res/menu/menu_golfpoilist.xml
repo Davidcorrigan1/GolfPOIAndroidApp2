@@ -38,6 +38,12 @@
         app:showAsAction="collapseActionView|ifRoom"/>
 
     <item
+        android:id="@+id/user_switch"
+        android:title=""
+        app:actionViewClass="androidx.appcompat.widget.SwitchCompat"
+        app:showAsAction="always" />
+
+    <item
         android:id="@+id/golfLoginFragment"
         android:title="@string/menu_logoutGolfPOI"
         android:orderInCategory="250"
