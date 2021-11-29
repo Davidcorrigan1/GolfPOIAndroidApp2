@@ -20,10 +20,15 @@
             android:icon="@drawable/ic_baseline_map_24"
             android:title="@string/menu_mapGolfPOI" />
 
-        <item
-            android:id="@+id/golfLoginFragment"
-            android:icon="@drawable/ic_baseline_exit_to_app_24"
-            android:title="@string/menu_logoutGolfPOI" />
+        <item android:title="Access Control">
+            <menu>
+                <item
+                    android:id="@+id/golfLoginFragment"
+                    android:icon="@drawable/ic_baseline_exit_to_app_24"
+                    android:onClick="signOut"
+                    android:title="@string/menu_logoutGolfPOI" />
+            </menu>
+        </item>
     </group>
 
 

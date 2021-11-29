@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
 import androidx.lifecycle.Observer
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.activityViewModels
@@ -33,6 +34,7 @@ class GolfLoginFragment : Fragment() {
         super.onCreate(savedInstanceState)
         app = activity?.application as MainApp
         i("Firebase - onCreate Entered")
+
     }
 
     override fun onCreateView(
@@ -41,15 +43,16 @@ class GolfLoginFragment : Fragment() {
     ): View? {
 
         _fragBinding = FragmentGolfLoginBinding.inflate(inflater, container, false)
-        val root = fragBinding?.root
+        val root = fragBinding.root
 
         i("Firebase - onCreateView Entered")
 
-        // defining listener callback
+        // defining listener callback to check user authorisation
         val authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
             val firebaseUser = firebaseAuth.currentUser
             if (firebaseUser != null) {
                 i("Firebase authStateLister Called")
+                i("Firebase User: ${firebaseUser.email}")
                 view?.post { findNavController().navigate(R.id.action_golfLoginFragment_to_golfPoiListFragment)}
             }
         }
@@ -68,12 +71,14 @@ class GolfLoginFragment : Fragment() {
 
         loginViewModel.firebaseAuthManager.errorStatus.observe(viewLifecycleOwner, Observer
         { status -> checkStatus(status) })
-
     }
+
 
     override fun onResume() {
         super.onResume()
         i("Firebase - onResume Entered")
+        loginViewModel.firebaseAuthManager.errorStatus.observe(viewLifecycleOwner, Observer
+        { status -> checkStatus(status) })
 
     }
 
@@ -126,6 +131,7 @@ class GolfLoginFragment : Fragment() {
         }
     }
 
+    // Define the Register Button callback
     fun setRegisterButtonListener(layout: FragmentGolfLoginBinding) {
         layout.btnRegister.setOnClickListener {
             i("Sending user to register")
