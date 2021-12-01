@@ -170,19 +170,19 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
 
     // Implements a menu event handler except for search
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.golfPoiSearch) {
-            return false
-        } else if (item.itemId == R.id.golfPoiUserFilter) {
-            loadGolfPOIs(app.golfPOIData.getCurrentUser().id)
-            return false
-        } else if (item.itemId == R.id.golfLoginFragment) {
-            i("Firebase GolfPoiList Log Out")
-            loggedInViewModel.logOut()
-            return false
-        } else {
-            return NavigationUI.onNavDestinationSelected(item,
-                   requireView().findNavController()) || super.onOptionsItemSelected(item)
-        }
+            if (item.itemId == R.id.golfPoiSearch) {
+                return false
+            } else if (item.itemId == R.id.golfPoiUserFilter) {
+                loadGolfPOIs(app.golfPOIData.getCurrentUser().id)
+                return false
+            } else if (item.itemId == R.id.golfLoginFragment) {
+                i("Firebase GolfPoiList Log Out")
+                loggedInViewModel.logOut()
+                return false
+            } else {
+                return NavigationUI.onNavDestinationSelected(item,
+                    requireView().findNavController()) || super.onOptionsItemSelected(item)
+            }
     }
 
     // Register the Callback Function to refresh the recycler

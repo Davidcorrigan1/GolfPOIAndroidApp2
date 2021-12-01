@@ -163,6 +163,13 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
             i("Firebase GolfPoi Log out")
             loggedInViewModel.logOut()
             return false
+        } else if (item.itemId == R.id.golfPoiFavourite) {
+            if (golfPOI.courseTitle.isNotEmpty()) {
+                var updatedUser = app.golfPOIData.getCurrentUser()
+                updatedUser.favorites.add(golfPOI.id)
+                app.golfPOIData.updateUser(updatedUser)
+            }
+            return false
         } else {
             return NavigationUI.onNavDestinationSelected(
                 item,
@@ -385,6 +392,10 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
                     .show()
             }
         }
+    }
+
+    fun setCourseAsFavourite () {
+
     }
 
     fun setScreenFromPassData(adapter: ArrayAdapter<String>, spinner: Spinner) {

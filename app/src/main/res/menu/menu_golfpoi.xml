@@ -15,6 +15,12 @@
         app:showAsAction="never"/>
 
     <item
+        android:id="@+id/golfPoiFavourite"
+        android:title="Add to Favourites"
+        android:orderInCategory="130"
+        app:showAsAction="never"/>
+
+    <item
         android:id="@+id/golfLoginFragment"
         android:title="@string/menu_logoutGolfPOI"
         android:orderInCategory="150"
