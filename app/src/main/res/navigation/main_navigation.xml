@@ -95,8 +95,8 @@
     <fragment
         android:id="@+id/golfPoisOverviewMapFragment"
         android:name="org.wit.golfpoi.ui.mapOverview.GolfPoisOverviewMapFragment"
-        android:label="Course Location Overview Map"
-        tools:layout="@layout/fragment_golf_pois_overview_map" >
+        android:label="Course Overview Map"
+        tools:layout="@layout/fragment_golf_pois_overview_map">
         <action
             android:id="@+id/action_golfPoisOverviewMapFragment_to_golfPoiListFragment"
             app:destination="@id/golfPoiListFragment"

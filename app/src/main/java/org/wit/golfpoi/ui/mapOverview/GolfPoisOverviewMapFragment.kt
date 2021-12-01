@@ -1,12 +1,14 @@
 package org.wit.golfpoi.ui.mapOverview
 
+import android.app.SearchManager
+import android.content.Context
 import android.net.Uri
 import android.os.Bundle
+import android.view.*
+import android.widget.SearchView
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
+import androidx.appcompat.widget.SwitchCompat
 import androidx.navigation.fragment.findNavController
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
@@ -32,11 +34,14 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
     private lateinit var contentBinding: CardMapGolfpoiBinding
     private val fragBinding get() = _fragBinding!!
     private lateinit var selectedGolfPOI : GolfPOIModel
+    private var searchView: SearchView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         app = activity?.application as MainApp
         golfPOIs = app.golfPOIData.findAllPOIs() as ArrayList<GolfPOIModel>
+
+        setHasOptionsMenu(true)
 
     }
 
@@ -58,13 +63,14 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
         contentBinding.mapView.onCreate(savedInstanceState)
         contentBinding.mapView.getMapAsync{
             map = it
-            configureMap()
+            configureMap(golfPOIs)
         }
+
 
         return root
     }
 
-    private fun configureMap() {
+    private fun configureMap(golfPOIs: List<GolfPOIModel>) {
         map.setOnMarkerClickListener(this)
         map.uiSettings.isZoomControlsEnabled = true
 
@@ -186,6 +192,73 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
             selectedGolfPOI = golfPOIMarker
         }
     }
+
+    // This handles the search bar functionality and filtering the course list and the toggle switch
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.menu_golfpoi_map, menu)
+
+
+        // Set up the Search in the Tool bar and setup the listener for entry of text.
+        val searchItem: MenuItem = menu.findItem(R.id.golfPoiSearch)
+        val searchManager: SearchManager = activity?.getSystemService(Context.SEARCH_SERVICE) as SearchManager
+        searchView = searchItem.actionView as SearchView
+        searchView?.setSearchableInfo(searchManager.getSearchableInfo(activity?.componentName))
+
+        searchView!!.setOnQueryTextListener (object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(newText: String?): Boolean {
+                i("onQueryTextCHange: $newText")
+                return true
+            }
+
+            override fun onQueryTextChange(query: String?): Boolean {
+                i("onQueryTextSubmit: $query")
+                query?.let {configureMap(loadGolfPOIs(it)) }
+                return true
+            }
+
+        })
+
+        // Set up a listener for the toggle switch. This will control showing all
+        // courses of just the current users entered courses
+        val userSwitch: SwitchCompat = menu.findItem(R.id.user_switch).actionView as SwitchCompat
+        userSwitch.setOnCheckedChangeListener { compoundButton, switchOn ->
+            if (switchOn == true) {
+                i("Switch is on")
+                configureMap(loadGolfPOIs(app.golfPOIData.getCurrentUser().id))
+            } else {
+                i("Switch is off")
+                configureMap(loadGolfPOIs())
+            }
+        }
+
+        super.onCreateOptionsMenu(menu, inflater)
+    }
+
+    // Load Golf courses function
+    private fun loadGolfPOIs(): List<GolfPOIModel> {
+        return app.golfPOIData.findAllPOIs()
+    }
+
+    // Load Golf course which were created by the current user
+    private fun loadGolfPOIs(id: Long): List<GolfPOIModel> {
+        return app.golfPOIData.findByCreatedByUserId(id)
+    }
+
+    // Load Golf courses which match the query string entered
+    private fun loadGolfPOIs(query: String) : List<GolfPOIModel> {
+        if (query != "") {
+            var allGolfCourse = app.golfPOIData.findAllPOIs()
+            i("allCoursesLength: ${allGolfCourse.size}")
+            var searchResults = ArrayList(allGolfCourse.filter { it.courseTitle.lowercase().contains(query.lowercase()) ||
+                    it.courseDescription.lowercase().contains(query.lowercase()) ||
+                    it.courseProvince.lowercase().contains(query.lowercase())})
+            i("searchResultsLength: ${searchResults.size}")
+            return searchResults
+        } else {
+            return app.golfPOIData.findAllPOIs()
+        }
+    }
+
 
 
 }

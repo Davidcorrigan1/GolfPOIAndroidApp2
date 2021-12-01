@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.SwitchCompat
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
@@ -126,15 +127,15 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
     }
 
     // Override method to load the menu resource
-    // This handles the search bar functionality and filtering the course list
+    // This handles the search bar functionality and filtering the course list and the toggle switch
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.menu_golfpoilist, menu)
+
+
+        // Set up the Search in the Tool bar and setup the listener for entry of text.
         val searchItem: MenuItem = menu.findItem(R.id.golfPoiSearch)
         val searchManager: SearchManager = activity?.getSystemService(Context.SEARCH_SERVICE) as SearchManager
-
-
         searchView = searchItem.actionView as SearchView
-
         searchView?.setSearchableInfo(searchManager.getSearchableInfo(activity?.componentName))
 
         searchView!!.setOnQueryTextListener (object : SearchView.OnQueryTextListener {
@@ -150,6 +151,20 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
             }
 
         })
+
+        // Set up a listener for the toggle switch. This wil control showing all
+        // courses of just the current users entered courses
+        val userSwitch: SwitchCompat = menu.findItem(R.id.user_switch).actionView as SwitchCompat
+        userSwitch.setOnCheckedChangeListener { compoundButton, switchOn ->
+            if (switchOn == true) {
+                i("Switch is on")
+                loadGolfPOIs(app.golfPOIData.getCurrentUser().id)
+            } else {
+                i("Switch is off")
+                loadGolfPOIs()
+            }
+        }
+
         super.onCreateOptionsMenu(menu, inflater)
     }
 
