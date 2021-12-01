@@ -190,6 +190,7 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
     // Configuring the map when it ready to display
     override fun onMapReady(googleMap: GoogleMap) {
         map = googleMap
+        map.uiSettings.isZoomControlsEnabled = true
         configureMap(map)
         setOnMapClickListener(map)
     }

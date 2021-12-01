@@ -70,6 +70,7 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
         return root
     }
 
+    // This configures the overview map based on the List of courses passed in to display
     private fun configureMap(golfPOIs: List<GolfPOIModel>) {
         map.setOnMarkerClickListener(this)
         map.uiSettings.isZoomControlsEnabled = true
@@ -92,14 +93,20 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
                 }
             }
             // Move the'camera' for that it zooms to show all the Golf Courses
-            map.moveCamera(
-                CameraUpdateFactory.newLatLngBounds(
-                    boundsBuilder.build(),
-                    1000,
-                    1000,
-                    0
-                )
-            )
+            if (golfPOIs.size > 1) {
+                map.moveCamera(
+                    CameraUpdateFactory.newLatLngBounds(
+                        boundsBuilder.build(),
+                        1300,
+                        1300,
+                        50
+                    ))
+            } else
+            // Zoom differently when only a single course returned.
+            {
+                val latlng = LatLng(golfPOIs[0].lat, golfPOIs[0].lng)
+                map.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, 12f))
+            }
             populateMarkerCard(golfPOIs.last().id)
         } else {
             val latlng = LatLng(52.490, -6.272)
@@ -107,9 +114,9 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
             map.moveCamera(
                 CameraUpdateFactory.newLatLngBounds(
                     boundsBuilder.build(),
-                    1000,
-                    1000,
-                    0
+                    1300,
+                    1300,
+                    50
                 )
             )
 

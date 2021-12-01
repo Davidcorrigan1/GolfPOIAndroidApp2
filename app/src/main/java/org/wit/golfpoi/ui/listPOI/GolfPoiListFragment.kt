@@ -227,6 +227,9 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
     // defining listener callback to check user authorisation
     val authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
         val firebaseUser = firebaseAuth.currentUser
+        app.golfPOIData.findUser(firebaseUser?.email.toString())
+            ?.let { app.golfPOIData.setCurrentUser(it) }
+
         if (firebaseUser == null) {
             i("Firebase authStateLister Called from PoiList and not logged on")
             view?.post { findNavController().navigate(R.id.action_golfPoiListFragment_to_golfLoginFragment)}
