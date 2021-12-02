@@ -76,9 +76,7 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
 
         val swipeDeleteHandler = object : SwipeToDeleteCallback(requireContext()) {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-
                 val position = viewHolder.adapterPosition
-                i("Deleting Item At position $position")
 
                 // remove from the recyclerview
                 val adapter = fragBinding.recyclerView.adapter as GolfPOIAdapter
@@ -110,8 +108,6 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
     override fun onResume() {
         super.onResume()
         i("fragment resuming")
-        i("${app.golfPOIData.findAllPOIs()}")
-        //loginViewModel.addFirebaseStateListener(authStateListener)
         currentUser = app.golfPOIData.getCurrentUser()
         fragBinding.recyclerView.adapter?.notifyDataSetChanged()
     }
@@ -147,7 +143,6 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.menu_golfpoilist, menu)
 
-
         // Set up the Search in the Tool bar and setup the listener for entry of text.
         val searchItem: MenuItem = menu.findItem(R.id.golfPoiSearch)
         val searchManager: SearchManager = activity?.getSystemService(Context.SEARCH_SERVICE) as SearchManager
@@ -156,31 +151,25 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
 
         searchView!!.setOnQueryTextListener (object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(newText: String?): Boolean {
-                i("onQueryTextCHange: $newText")
                 return true
             }
 
             override fun onQueryTextChange(query: String?): Boolean {
-                i("onQueryTextSubmit: $query")
                 query?.let { loadGolfPOIs(it) }
                 return true
             }
-
         })
 
         // Set up a listener for the toggle switch. This wil control showing all
         // courses of just the current users entered courses
         val userSwitch: SwitchCompat = menu.findItem(R.id.user_switch).actionView as SwitchCompat
         userSwitch.setOnCheckedChangeListener { compoundButton, switchOn ->
-            if (switchOn == true) {
-                i("Switch is on")
+            if (switchOn) {
                 loadGolfPOIs(app.golfPOIData.getCurrentUser().id, favourites = false)
             } else {
-                i("Switch is off")
                 loadGolfPOIs()
             }
         }
-
         super.onCreateOptionsMenu(menu, inflater)
     }
 
@@ -192,7 +181,6 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
                 loadGolfPOIs(app.golfPOIData.getCurrentUser().id,favourites = true)
                 return false
             } else if (item.itemId == R.id.golfLoginFragment) {
-                i("Firebase GolfPoiList Log Out")
                 loggedInViewModel.logOut()
                 return false
             } else {
@@ -208,9 +196,8 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
             { loadGolfPOIs() }
     }
 
-    // Load Golf courses function
+    // Load all Golf courses function
     private fun loadGolfPOIs() {
-        i("currentUser in loadGolfPOIs : $currentUser")
         showGolfPOIs(ArrayList(app.golfPOIData.findAllPOIs()), currentUser)
     }
 
@@ -229,11 +216,11 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
     private fun loadGolfPOIs(query: String) {
         if (query != "") {
             var allGolfCourse = app.golfPOIData.findAllPOIs()
-            i("allCoursesLength: ${allGolfCourse.size}")
-            var searchResults = ArrayList(allGolfCourse.filter { it.courseTitle.lowercase().contains(query.lowercase()) ||
-                                                       it.courseDescription.lowercase().contains(query.lowercase()) ||
-                                                       it.courseProvince.lowercase().contains(query.lowercase())})
-            i("searchResultsLength: ${searchResults.size}")
+            var searchResults = ArrayList(allGolfCourse.filter {
+                 it.courseTitle.lowercase().contains(query.lowercase()) ||
+                 it.courseDescription.lowercase().contains(query.lowercase()) ||
+                 it.courseProvince.lowercase().contains(query.lowercase()) ||
+                 it.coursePar.toString().contains(query.lowercase())})
             showGolfPOIs(searchResults, currentUser)
         } else {
             loadGolfPOIs()
@@ -253,7 +240,6 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
             ?.let { app.golfPOIData.setCurrentUser(it) }
 
         if (firebaseUser == null) {
-            i("Firebase authStateLister Called from PoiList and not logged on")
             view?.post { findNavController().navigate(R.id.action_golfPoiListFragment_to_golfLoginFragment)}
         } else {
             fragBinding.recyclerView.adapter?.notifyDataSetChanged()
