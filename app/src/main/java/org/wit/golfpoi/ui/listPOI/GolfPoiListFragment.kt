@@ -24,8 +24,10 @@ import com.google.firebase.auth.FirebaseAuth
 import org.wit.golfpoi.R
 import org.wit.golfpoi.adapter.GolfPOIAdapter
 import org.wit.golfpoi.adapter.GolfPOIListener
+import org.wit.golfpoi.databinding.FragmentGolfPoiBinding
 import org.wit.golfpoi.databinding.FragmentGolfPoiListBinding
 import org.wit.golfpoi.helpers.SwipeToDeleteCallback
+import org.wit.golfpoi.helpers.showImagePicker
 import org.wit.golfpoi.main.MainApp
 import org.wit.golfpoi.models.GolfPOIModel
 import org.wit.golfpoi.models.GolfUserModel
@@ -87,9 +89,11 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
                 fragBinding.recyclerView.adapter?.notifyItemRemoved(position)
             }
         }
+
+
         val itemTouchDeleteHelper = ItemTouchHelper(swipeDeleteHandler)
         itemTouchDeleteHelper.attachToRecyclerView(fragBinding.recyclerView)
-
+        setFabButtonListener(fragBinding)
         loginViewModel.addFirebaseStateListener(authStateListener)
         registerRefreshCallback(fragBinding)
 
@@ -136,6 +140,14 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
         }
         app.golfPOIData.updateUser(updatedUser)
         fragBinding.recyclerView.adapter?.notifyDataSetChanged()
+    }
+
+    // Set the listener for the floating add button listener
+    private fun setFabButtonListener (layout: FragmentGolfPoiListBinding) {
+        // Listener for the Add Image button
+        layout.fab.setOnClickListener {
+            findNavController().navigate(R.id.action_golfPoiListFragment_to_golfPoiFragment)
+        }
     }
 
     // Override method to load the menu resource
