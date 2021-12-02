@@ -24,10 +24,13 @@ import com.google.firebase.auth.FirebaseAuth
 import org.wit.golfpoi.R
 import org.wit.golfpoi.adapter.GolfPOIAdapter
 import org.wit.golfpoi.adapter.GolfPOIListener
+import org.wit.golfpoi.databinding.FragmentGolfPoiBinding
 import org.wit.golfpoi.databinding.FragmentGolfPoiListBinding
 import org.wit.golfpoi.helpers.SwipeToDeleteCallback
+import org.wit.golfpoi.helpers.showImagePicker
 import org.wit.golfpoi.main.MainApp
 import org.wit.golfpoi.models.GolfPOIModel
+import org.wit.golfpoi.models.GolfUserModel
 import org.wit.golfpoi.ui.auth.LoggedInViewModel
 import org.wit.golfpoi.ui.auth.LoginViewModel
 import timber.log.Timber.i
@@ -42,11 +45,14 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
     private var _fragBinding: FragmentGolfPoiListBinding? = null
     private val fragBinding get() = _fragBinding!!
     private var searchView: SearchView? = null
+    private lateinit var currentUser: GolfUserModel
 
     // When the Fragment is created
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         app = activity?.application as MainApp
+
+        currentUser = app.golfPOIData.getCurrentUser()
 
         // Disable the back button here so user can't backpress to login screen
         activity?.onBackPressedDispatcher?.addCallback(this,object : OnBackPressedCallback(true){
@@ -72,9 +78,7 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
 
         val swipeDeleteHandler = object : SwipeToDeleteCallback(requireContext()) {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
-
                 val position = viewHolder.adapterPosition
-                i("Deleting Item At position $position")
 
                 // remove from the recyclerview
                 val adapter = fragBinding.recyclerView.adapter as GolfPOIAdapter
@@ -85,9 +89,11 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
                 fragBinding.recyclerView.adapter?.notifyItemRemoved(position)
             }
         }
+
+
         val itemTouchDeleteHelper = ItemTouchHelper(swipeDeleteHandler)
         itemTouchDeleteHelper.attachToRecyclerView(fragBinding.recyclerView)
-
+        setFabButtonListener(fragBinding)
         loginViewModel.addFirebaseStateListener(authStateListener)
         registerRefreshCallback(fragBinding)
 
@@ -101,14 +107,12 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
 
     override fun onPause() {
         super.onPause()
-        //loginViewModel.removeFirebaseStateListener(authStateListener)
     }
 
     override fun onResume() {
         super.onResume()
         i("fragment resuming")
-        i("${app.golfPOIData.findAllPOIs()}")
-        //loginViewModel.addFirebaseStateListener(authStateListener)
+        currentUser = app.golfPOIData.getCurrentUser()
         fragBinding.recyclerView.adapter?.notifyDataSetChanged()
     }
 
@@ -126,11 +130,30 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
         findNavController().navigate(action)
     }
 
+    // Implement the listener for the favourites button
+    override fun onGolfPOIFavButtonClick(golfPOI: GolfPOIModel) {
+        var updatedUser = app.golfPOIData.getCurrentUser()
+        if (updatedUser.favorites.contains(golfPOI.id)) {
+            updatedUser.favorites.remove(golfPOI.id)
+        } else {
+            updatedUser.favorites.add(golfPOI.id)
+        }
+        app.golfPOIData.updateUser(updatedUser)
+        fragBinding.recyclerView.adapter?.notifyDataSetChanged()
+    }
+
+    // Set the listener for the floating add button listener
+    private fun setFabButtonListener (layout: FragmentGolfPoiListBinding) {
+        // Listener for the Add Image button
+        layout.fab.setOnClickListener {
+            findNavController().navigate(R.id.action_golfPoiListFragment_to_golfPoiFragment)
+        }
+    }
+
     // Override method to load the menu resource
     // This handles the search bar functionality and filtering the course list and the toggle switch
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         inflater.inflate(R.menu.menu_golfpoilist, menu)
-
 
         // Set up the Search in the Tool bar and setup the listener for entry of text.
         val searchItem: MenuItem = menu.findItem(R.id.golfPoiSearch)
@@ -140,49 +163,42 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
 
         searchView!!.setOnQueryTextListener (object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(newText: String?): Boolean {
-                i("onQueryTextCHange: $newText")
                 return true
             }
 
             override fun onQueryTextChange(query: String?): Boolean {
-                i("onQueryTextSubmit: $query")
                 query?.let { loadGolfPOIs(it) }
                 return true
             }
-
         })
 
         // Set up a listener for the toggle switch. This wil control showing all
         // courses of just the current users entered courses
         val userSwitch: SwitchCompat = menu.findItem(R.id.user_switch).actionView as SwitchCompat
         userSwitch.setOnCheckedChangeListener { compoundButton, switchOn ->
-            if (switchOn == true) {
-                i("Switch is on")
-                loadGolfPOIs(app.golfPOIData.getCurrentUser().id)
+            if (switchOn) {
+                loadGolfPOIs(app.golfPOIData.getCurrentUser().id, favourites = false)
             } else {
-                i("Switch is off")
                 loadGolfPOIs()
             }
         }
-
         super.onCreateOptionsMenu(menu, inflater)
     }
 
     // Implements a menu event handler except for search
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.golfPoiSearch) {
-            return false
-        } else if (item.itemId == R.id.golfPoiUserFilter) {
-            loadGolfPOIs(app.golfPOIData.getCurrentUser().id)
-            return false
-        } else if (item.itemId == R.id.golfLoginFragment) {
-            i("Firebase GolfPoiList Log Out")
-            loggedInViewModel.logOut()
-            return false
-        } else {
-            return NavigationUI.onNavDestinationSelected(item,
-                   requireView().findNavController()) || super.onOptionsItemSelected(item)
-        }
+            if (item.itemId == R.id.golfPoiSearch) {
+                return false
+            } else if (item.itemId == R.id.golfPoiUserFilter) {
+                loadGolfPOIs(app.golfPOIData.getCurrentUser().id,favourites = true)
+                return false
+            } else if (item.itemId == R.id.golfLoginFragment) {
+                loggedInViewModel.logOut()
+                return false
+            } else {
+                return NavigationUI.onNavDestinationSelected(item,
+                    requireView().findNavController()) || super.onOptionsItemSelected(item)
+            }
     }
 
     // Register the Callback Function to refresh the recycler
@@ -192,35 +208,40 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
             { loadGolfPOIs() }
     }
 
-    // Load Golf courses function
+    // Load all Golf courses function
     private fun loadGolfPOIs() {
-        showGolfPOIs(ArrayList(app.golfPOIData.findAllPOIs()))
+        showGolfPOIs(ArrayList(app.golfPOIData.findAllPOIs()), currentUser)
     }
 
     // Load Golf course which were created by the current user
-    private fun loadGolfPOIs(id: Long) {
-        var userFilteredCourses = ArrayList(app.golfPOIData.findByCreatedByUserId(id))
-        showGolfPOIs(userFilteredCourses)
+    private fun loadGolfPOIs(id: Long, favourites: Boolean) {
+        if (favourites) {
+            var favouriteCourses = ArrayList(app.golfPOIData.findUsersFavouriteCourses(id))
+            showGolfPOIs(favouriteCourses, currentUser)
+        } else {
+            var userFilteredCourses = ArrayList(app.golfPOIData.findByCreatedByUserId(id))
+            showGolfPOIs(userFilteredCourses, currentUser)
+        }
     }
 
     // Load Golf courses which match the query string entered
     private fun loadGolfPOIs(query: String) {
         if (query != "") {
             var allGolfCourse = app.golfPOIData.findAllPOIs()
-            i("allCoursesLength: ${allGolfCourse.size}")
-            var searchResults = ArrayList(allGolfCourse.filter { it.courseTitle.lowercase().contains(query.lowercase()) ||
-                                                       it.courseDescription.lowercase().contains(query.lowercase()) ||
-                                                       it.courseProvince.lowercase().contains(query.lowercase())})
-            i("searchResultsLength: ${searchResults.size}")
-            showGolfPOIs(searchResults)
+            var searchResults = ArrayList(allGolfCourse.filter {
+                 it.courseTitle.lowercase().contains(query.lowercase()) ||
+                 it.courseDescription.lowercase().contains(query.lowercase()) ||
+                 it.courseProvince.lowercase().contains(query.lowercase()) ||
+                 it.coursePar.toString().contains(query.lowercase())})
+            showGolfPOIs(searchResults, currentUser)
         } else {
             loadGolfPOIs()
         }
     }
 
     // Bind data to adapter recycler view.
-    fun showGolfPOIs (golfPOIs: ArrayList<GolfPOIModel>) {
-        fragBinding.recyclerView.adapter = GolfPOIAdapter(golfPOIs, this)
+    fun showGolfPOIs (golfPOIs: ArrayList<GolfPOIModel>, currentUser: GolfUserModel) {
+        fragBinding.recyclerView.adapter = GolfPOIAdapter(golfPOIs, currentUser,this)
         fragBinding.recyclerView.adapter?.notifyDataSetChanged()
     }
 
@@ -231,8 +252,10 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
             ?.let { app.golfPOIData.setCurrentUser(it) }
 
         if (firebaseUser == null) {
-            i("Firebase authStateLister Called from PoiList and not logged on")
             view?.post { findNavController().navigate(R.id.action_golfPoiListFragment_to_golfLoginFragment)}
+        } else {
+            fragBinding.recyclerView.adapter?.notifyDataSetChanged()
         }
     }
+
 }

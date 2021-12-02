@@ -87,6 +87,18 @@ class GolfPOIJSONStore(private val context: Context) : GolfPOIStore {
         return golfPOIData.golfPOIs.filter { p -> p.createdById == id}
     }
 
+    // Find users favourited courses
+    override fun findUsersFavouriteCourses(id: Long): List<GolfPOIModel> {
+        var foundUser : GolfUserModel? = golfPOIData.users.find { p -> p.id == id}
+        var favouriteCourse: MutableList<GolfPOIModel> = ArrayList()
+        golfPOIData.golfPOIs.forEach { it ->
+            if (foundUser?.favorites!!.contains(it.id)) {
+                favouriteCourse.add(it)
+            }
+        }
+        return favouriteCourse
+    }
+
     // Generate a user id and add user passed in to the array and update JSON File
     override fun createUser(user: GolfUserModel) {
         user.id = generateRandomId()
@@ -94,6 +106,7 @@ class GolfPOIJSONStore(private val context: Context) : GolfPOIStore {
         serialize(JSON_FILE_DATA, listTypeDATA)
         logAllUsers()
     }
+
 
     // Use the email address to find a user if it exists, if found check the
     // password matches the supplied. If match return the user object else null.
@@ -107,6 +120,24 @@ class GolfPOIJSONStore(private val context: Context) : GolfPOIStore {
             userFound = null
         }
         return userFound
+    }
+
+    // Finds and updates a user, also if current user then update it as well
+    override fun updateUser(user: GolfUserModel) {
+        var foundUser : GolfUserModel? = golfPOIData.users.find { p -> p.id == user.id}
+        if (foundUser != null) {
+            foundUser.lastName = user.lastName
+            foundUser.firstName = user.firstName
+            foundUser.userEmail = user.userEmail
+            foundUser.lastLoginDate = user.lastLoginDate
+            foundUser.loginCount = user.loginCount
+            foundUser.favorites = user.favorites
+            foundUser.userPassword = user.userPassword
+            serialize(JSON_FILE_DATA, listTypeDATA)
+            if (foundUser.id == currentUser.id) {
+                currentUser = foundUser
+            }
+        }
     }
 
     // Set the passed in user to be the current User

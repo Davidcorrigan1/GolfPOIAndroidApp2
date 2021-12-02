@@ -13,6 +13,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
+
         <com.google.android.material.appbar.AppBarLayout
             android:id="@+id/appBarLayout"
             android:layout_width="match_parent"
@@ -23,6 +24,7 @@
             app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar">
 
         </com.google.android.material.appbar.AppBarLayout>
+
 
         <ScrollView
             android:layout_width="match_parent"
@@ -54,6 +56,7 @@
                         android:padding="8dp"
                         android:textColor="@color/colorAccent"
                         android:textSize="20sp" />
+
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <com.google.android.material.textfield.TextInputLayout
@@ -64,6 +67,7 @@
                     android:hint="@string/hint_golfPOIDesc"
                     app:hintTextAppearance="@style/TextAppearance.App.TextInputLayout"
                     style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox">
+
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/golfPOIDesc"
@@ -76,6 +80,7 @@
                         android:padding="8dp"
                         android:textColor="@color/colorAccent"
                         android:textSize="20sp" />
+
                 </com.google.android.material.textfield.TextInputLayout>
 
                 <LinearLayout
@@ -130,7 +135,7 @@
                 <Button
                     android:id="@+id/btn_choose_image"
                     android:layout_width="match_parent"
-                    android:layout_height="45dp"
+                    android:layout_height="48dp"
                     android:layout_margin="8dp"
                     android:background="@color/colorAccentLight"
                     android:paddingTop="8dp"
@@ -151,6 +156,8 @@
 
 
             </LinearLayout>
+
+
         </ScrollView>
 
     </RelativeLayout>
