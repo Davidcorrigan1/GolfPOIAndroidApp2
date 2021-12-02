@@ -79,7 +79,6 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
 
         //val golfPOI = arguments as GolfPOIModel
         val golfPOIBundle = arguments
-        i("golfPOIBundle: $golfPOIBundle")
         if (golfPOIBundle?.get("golfPOI") != null) {
             golfPOI = golfPOIBundle.getParcelable("golfPOI")!!
         }
@@ -99,7 +98,7 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
         fragBinding.golfPOIparPicker.maxValue = 72
 
         // If the golfPOI has been passed in with values
-        if ((golfPOI.courseTitle != "" ) || (golfPOI.courseDescription != "")) {
+        if ((golfPOI.courseTitle != "" )) {
             setScreenFromPassData(adapter, spinner)
         }
 
@@ -160,8 +159,14 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
             saveGolfCourseData(fragBinding)
             return false
         } else if (item.itemId == R.id.golfLoginFragment) {
-            i("Firebase GolfPoi Log out")
             loggedInViewModel.logOut()
+            return false
+        } else if (item.itemId == R.id.golfPoiFavourite) {
+            if (golfPOI.courseTitle.isNotEmpty()) {
+                var updatedUser = app.golfPOIData.getCurrentUser()
+                updatedUser.favorites.add(golfPOI.id)
+                app.golfPOIData.updateUser(updatedUser)
+            }
             return false
         } else {
             return NavigationUI.onNavDestinationSelected(
@@ -182,7 +187,6 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
     val authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
         val firebaseUser = firebaseAuth.currentUser
         if (firebaseUser == null) {
-            i("Firebase authStateLister Called from PoiAdd and not logged on")
             view?.post { findNavController().navigate(R.id.action_golfPoiFragment_to_golfLoginFragment)}
         }
     }
@@ -199,9 +203,7 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
         // Listener for the spinner dropdown for provinces
         spinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(p0: AdapterView<*>?, p1: View?, p2: Int, p3: Long) {
-                i("Selected: ${getString(R.string.selected_item)} ${provinces[p2]}" )
                 setProvinces = provinces[p2]
-                i("The selected provence is: $setProvinces")
             }
 
             override fun onNothingSelected(parent: AdapterView<*>) {
@@ -219,8 +221,6 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
                     AppCompatActivity.RESULT_OK -> {
                         if (result.data != null) {
                             golfPOI.image = result.data!!.data!!
-                            i("result.data.data: ${result.data!!.data!!}")
-                            i("golfPOI.image: ${golfPOI.image}")
                             Picasso.get()
                                 .load(golfPOI.image)
                                 .into(layout.golfPOIImage)
@@ -238,7 +238,6 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
             registerForActivityResult(ActivityResultContracts.RequestPermission())
             { isGranted: Boolean ->
                 if (isGranted) {
-                    i("Current Location setting 246")
                     doSetCurrentLocation()
                 } else {
                     locationUpdate(defaultLocation.lat, defaultLocation.lng)
@@ -248,7 +247,6 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
 
     private fun setOnMapClickListener(map: GoogleMap) {
         map.setOnMapClickListener(GoogleMap.OnMapClickListener {
-            i("Set Map Clicked")
 
             if (golfPOI.lat == 0.0 && golfPOI.lng == 0.0) {
                 golfPOI.lat = defaultLocation.lat
@@ -297,7 +295,6 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
 
         if (golfPOI.lat == 0.00 && golfPOI.lng == 0.00) {
             if (checkLocationPermissions(requireActivity())) {
-                i("Current Location setting 296")
                 doSetCurrentLocation()
             } else {
                 golfPOI.lat = defaultLocation.lat
@@ -311,11 +308,11 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
 
     @SuppressLint("MissingPermission")
     fun doSetCurrentLocation() {
-        i("Current Location -setting location from doSetLocation")
+        //Current Location -setting location from doSetLocation")
         locationService.lastLocation.addOnSuccessListener {
-            i("Current Location lat lng in doSetCurrentListener")
+            //Current Location lat lng in doSetCurrentListener")
             if(it == null) {
-                i("Current Location - last known location not found")
+                //Current Location - last known location not found")
                 locationUpdate(defaultLocation.lat, defaultLocation.lng)
             } else {
                 locationUpdate(it.latitude, it.longitude)
@@ -337,8 +334,6 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
             locationService.requestLocationUpdates(locationRequest, locationCallback, null)
         }
     }
-
-
 
     // Update the Marker location on the map and move focus
     fun locationUpdate(lat: Double, lng: Double) {
@@ -364,15 +359,11 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
         golfPOI.courseProvince = setProvinces
         golfPOI.coursePar = layout.golfPOIparPicker.value
 
-        i("Setting the model province to $setProvinces")
 
         if (golfPOI.courseTitle.isNotEmpty() && golfPOI.courseDescription.isNotEmpty()) {
             if (app.golfPOIData.findPOI(golfPOI.id) != null) {
-                i("save Button Pressed ${golfPOI.courseTitle} and ${golfPOI.courseDescription}")
-                i("Course being saved: $golfPOI")
                 app.golfPOIData.updatePOI(golfPOI.copy())
             } else {
-                i("add Button Pressed ${golfPOI.courseTitle} and ${golfPOI.courseDescription}")
                 app.golfPOIData.createPOI(golfPOI.copy())
             }
             val navController = view?.findNavController()
@@ -387,6 +378,7 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
         }
     }
 
+    // Populate the Add POI screen from the Course data
     fun setScreenFromPassData(adapter: ArrayAdapter<String>, spinner: Spinner) {
         i("golfPOI.courseTitle:  ${golfPOI.courseTitle}")
         fragBinding.golfPOITitle.setText(golfPOI.courseTitle)
@@ -403,7 +395,6 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
         // check the current selected provence and default to that one!
         val spinnerPosition : Int = adapter.getPosition(golfPOI.courseProvince)
         spinner.setSelection(spinnerPosition)
-
     }
 
 }

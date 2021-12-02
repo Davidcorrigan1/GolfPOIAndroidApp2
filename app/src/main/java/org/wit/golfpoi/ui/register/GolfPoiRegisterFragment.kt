@@ -87,8 +87,7 @@ class GolfPoiRegisterFragment : Fragment() {
                 )
             }
 
-            Timber.i("Check the user already exists for email address on DB")
-
+            //"Check the user already exists for email address on DB"
             val existingUser: GolfUserModel? =
                 app.golfPOIData.findUser(layout.editTextEmail.text.toString())
             if (existingUser == null) {
@@ -133,7 +132,6 @@ class GolfPoiRegisterFragment : Fragment() {
         }
 
         layout.btnLogin.setOnClickListener {
-            Timber.i("Sending user to Login")
             findNavController().navigate(R.id.action_golfPoiRegisterFragment_to_golfLoginFragment)
         }
     }
@@ -145,8 +143,6 @@ class GolfPoiRegisterFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        // Check if user is signed in (non-null) and update UI accordingly.
-
     }
 
     // Chech the status of the authentication

@@ -65,8 +65,6 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
             map = it
             configureMap(golfPOIs)
         }
-
-
         return root
     }
 
@@ -119,13 +117,10 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
                     50
                 )
             )
-
         }
-
     }
 
     companion object {
-
         @JvmStatic
         fun newInstance(param1: String, param2: String) =
             GolfPoisOverviewMapFragment().apply {
@@ -169,7 +164,6 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
             val action = GolfPoisOverviewMapFragmentDirections.actionGolfPoisOverviewMapFragmentToGolfPoiListFragment()
             findNavController().navigate(action)
         }
-
     }
 
     override fun onMarkerClick(marker: Marker): Boolean {
@@ -186,13 +180,19 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
             contentBinding.golfPOIProvince.text = golfPOIMarker.courseProvince
 
             contentBinding.golfPOIPar.text = "  Par: ${golfPOIMarker.coursePar}"
+
+            // Set the favourites icon if the course is a favourite
+            if (app.golfPOIData.getCurrentUser().favorites.contains(golfPOIMarker.id)) {
+                contentBinding.favoriteBtn.setImageResource(R.drawable.ic_baseline_favorite_24)
+            } else {
+                contentBinding.favoriteBtn.setImageResource(R.drawable.ic_baseline_favorite_border_24)
+            }
+
             // Show default image if none available
             if (golfPOIMarker.image != null) {
                 if (golfPOIMarker.image.equals(Uri.EMPTY)) {
                     contentBinding.imageIcon.setImageResource(R.drawable.golflogo)
                 } else {
-                    Timber.i("golfPOI Image: ${golfPOIMarker.image}")
-                    //Picasso.get().load(golfPOI.image).centerCrop().fit().into(binding.imageIcon)
                     Picasso.get().load(golfPOIMarker.image).resize(200,200).into(contentBinding.imageIcon)
                 }
             }
@@ -213,31 +213,25 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
 
         searchView!!.setOnQueryTextListener (object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(newText: String?): Boolean {
-                i("onQueryTextCHange: $newText")
                 return true
             }
 
             override fun onQueryTextChange(query: String?): Boolean {
-                i("onQueryTextSubmit: $query")
                 query?.let {configureMap(loadGolfPOIs(it)) }
                 return true
             }
-
         })
 
         // Set up a listener for the toggle switch. This will control showing all
         // courses of just the current users entered courses
         val userSwitch: SwitchCompat = menu.findItem(R.id.user_switch).actionView as SwitchCompat
         userSwitch.setOnCheckedChangeListener { compoundButton, switchOn ->
-            if (switchOn == true) {
-                i("Switch is on")
+            if (switchOn) {
                 configureMap(loadGolfPOIs(app.golfPOIData.getCurrentUser().id))
             } else {
-                i("Switch is off")
                 configureMap(loadGolfPOIs())
             }
         }
-
         super.onCreateOptionsMenu(menu, inflater)
     }
 
@@ -256,10 +250,12 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
         if (query != "") {
             var allGolfCourse = app.golfPOIData.findAllPOIs()
             i("allCoursesLength: ${allGolfCourse.size}")
-            var searchResults = ArrayList(allGolfCourse.filter { it.courseTitle.lowercase().contains(query.lowercase()) ||
+            var searchResults = ArrayList(allGolfCourse.filter {
+                    it.courseTitle.lowercase().contains(query.lowercase()) ||
                     it.courseDescription.lowercase().contains(query.lowercase()) ||
-                    it.courseProvince.lowercase().contains(query.lowercase())})
-            i("searchResultsLength: ${searchResults.size}")
+                    it.courseProvince.lowercase().contains(query.lowercase()) ||
+                    it.coursePar.toString().contains(query.lowercase())
+            })
             return searchResults
         } else {
             return app.golfPOIData.findAllPOIs()

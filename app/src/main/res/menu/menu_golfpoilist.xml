@@ -19,7 +19,7 @@
 
     <item
         android:id="@+id/golfPoiUserFilter"
-        android:title="My Golf Courses"
+        android:title="Favourite Courses"
         android:orderInCategory="160"
         app:showAsAction="never"/>
 
@@ -42,6 +42,7 @@
         android:title=""
         app:actionViewClass="androidx.appcompat.widget.SwitchCompat"
         app:showAsAction="always" />
+
     <item
         android:id="@+id/golfLoginFragment"
         android:title="@string/menu_logoutGolfPOI"
