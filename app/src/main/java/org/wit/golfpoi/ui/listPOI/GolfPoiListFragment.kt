@@ -174,7 +174,7 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
         userSwitch.setOnCheckedChangeListener { compoundButton, switchOn ->
             if (switchOn == true) {
                 i("Switch is on")
-                loadGolfPOIs(app.golfPOIData.getCurrentUser().id)
+                loadGolfPOIs(app.golfPOIData.getCurrentUser().id, favourites = false)
             } else {
                 i("Switch is off")
                 loadGolfPOIs()
@@ -189,7 +189,7 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
             if (item.itemId == R.id.golfPoiSearch) {
                 return false
             } else if (item.itemId == R.id.golfPoiUserFilter) {
-                loadGolfPOIs(app.golfPOIData.getCurrentUser().id)
+                loadGolfPOIs(app.golfPOIData.getCurrentUser().id,favourites = true)
                 return false
             } else if (item.itemId == R.id.golfLoginFragment) {
                 i("Firebase GolfPoiList Log Out")
@@ -215,9 +215,14 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
     }
 
     // Load Golf course which were created by the current user
-    private fun loadGolfPOIs(id: Long) {
-        var userFilteredCourses = ArrayList(app.golfPOIData.findByCreatedByUserId(id))
-        showGolfPOIs(userFilteredCourses, currentUser)
+    private fun loadGolfPOIs(id: Long, favourites: Boolean) {
+        if (favourites) {
+            var favouriteCourses = ArrayList(app.golfPOIData.findUsersFavouriteCourses(id))
+            showGolfPOIs(favouriteCourses, currentUser)
+        } else {
+            var userFilteredCourses = ArrayList(app.golfPOIData.findByCreatedByUserId(id))
+            showGolfPOIs(userFilteredCourses, currentUser)
+        }
     }
 
     // Load Golf courses which match the query string entered

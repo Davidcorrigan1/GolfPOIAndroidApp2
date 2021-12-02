@@ -87,6 +87,18 @@ class GolfPOIJSONStore(private val context: Context) : GolfPOIStore {
         return golfPOIData.golfPOIs.filter { p -> p.createdById == id}
     }
 
+    // Find users favourited courses
+    override fun findUsersFavouriteCourses(id: Long): List<GolfPOIModel> {
+        var foundUser : GolfUserModel? = golfPOIData.users.find { p -> p.id == id}
+        var favouriteCourse: MutableList<GolfPOIModel> = ArrayList()
+        golfPOIData.golfPOIs.forEach { it ->
+            if (foundUser?.favorites!!.contains(it.id)) {
+                favouriteCourse.add(it)
+            }
+        }
+        return favouriteCourse
+    }
+
     // Generate a user id and add user passed in to the array and update JSON File
     override fun createUser(user: GolfUserModel) {
         user.id = generateRandomId()
@@ -94,7 +106,6 @@ class GolfPOIJSONStore(private val context: Context) : GolfPOIStore {
         serialize(JSON_FILE_DATA, listTypeDATA)
         logAllUsers()
     }
-
 
 
     // Use the email address to find a user if it exists, if found check the

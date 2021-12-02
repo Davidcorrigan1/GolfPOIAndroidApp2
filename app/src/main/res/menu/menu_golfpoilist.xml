@@ -19,7 +19,7 @@
 
     <item
         android:id="@+id/golfPoiUserFilter"
-        android:title="My Golf Courses"
+        android:title="Favourite Courses"
         android:orderInCategory="160"
         app:showAsAction="never"/>
 

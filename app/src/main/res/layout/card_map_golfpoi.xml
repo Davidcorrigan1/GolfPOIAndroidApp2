@@ -77,6 +77,16 @@
                 android:textSize="20sp"
                 tools:text="Par 72" />
 
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_baseline_favorite_border_24"
+                android:layout_below="@id/golfPOITitle"
+                android:layout_toEndOf="@+id/golfPOIPar"
+                android:background="@android:color/transparent"
+                android:id="@+id/favoriteBtn"
+                android:padding="4dp"/>
+
             <TextView
                 android:id="@+id/golfPOIDesc"
                 android:layout_width="wrap_content"

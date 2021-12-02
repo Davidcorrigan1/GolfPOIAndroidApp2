@@ -186,6 +186,18 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
             contentBinding.golfPOIProvince.text = golfPOIMarker.courseProvince
 
             contentBinding.golfPOIPar.text = "  Par: ${golfPOIMarker.coursePar}"
+
+            // Set the favourites icon if the course is a favourite
+            if (app.golfPOIData.getCurrentUser().favorites.contains(golfPOIMarker.id)) {
+                i("currentFavourites: ${app.golfPOIData.getCurrentUser().favorites}")
+                i("CurrentCourse: ${golfPOIMarker.id}")
+                contentBinding.favoriteBtn.setImageResource(R.drawable.ic_baseline_favorite_24)
+            } else {
+                i("currentFavourites: ${app.golfPOIData.getCurrentUser().favorites}")
+                i("CurrentCourse: ${golfPOIMarker.id}")
+                contentBinding.favoriteBtn.setImageResource(R.drawable.ic_baseline_favorite_border_24)
+            }
+
             // Show default image if none available
             if (golfPOIMarker.image != null) {
                 if (golfPOIMarker.image.equals(Uri.EMPTY)) {
