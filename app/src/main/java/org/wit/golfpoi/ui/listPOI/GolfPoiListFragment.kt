@@ -26,6 +26,7 @@ import org.wit.golfpoi.adapter.GolfPOIAdapter
 import org.wit.golfpoi.adapter.GolfPOIListener
 import org.wit.golfpoi.databinding.FragmentGolfPoiListBinding
 import org.wit.golfpoi.helpers.SwipeToDeleteCallback
+import org.wit.golfpoi.helpers.SwipeToEditCallback
 import org.wit.golfpoi.main.MainApp
 import org.wit.golfpoi.models.GolfPOIModel
 import org.wit.golfpoi.models.GolfUserModel
@@ -77,35 +78,35 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
         val swipeDeleteHandler = object : SwipeToDeleteCallback(requireContext()) {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.adapterPosition
-
                 // remove from the recyclerview
                 val adapter = fragBinding.recyclerView.adapter as GolfPOIAdapter
                 adapter.removeAt(viewHolder.adapterPosition)
-
                 // Delete from the data source
                 app.golfPOIData.removePOI(position)
                 fragBinding.recyclerView.adapter?.notifyItemRemoved(position)
             }
         }
 
-        /*// defining listener callback to check user authorisation
-        val authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
-            val firebaseUser = firebaseAuth.currentUser
-            if (firebaseUser != null) {
-                i("Firebase authStateLister Called")
-                i("Firebase User: ${firebaseUser.email}")
-                app.golfPOIData.findUser(firebaseUser?.email.toString())
-                    ?.let { app.golfPOIData.setCurrentUser(it) }
-                loadGolfPOIs(app.golfPOIData.getCurrentUser())
-                fragBinding.recyclerView.adapter?.notifyDataSetChanged()
-            } else {
-                view?.post { findNavController().navigate(R.id.action_golfPoiListFragment_to_golfLoginFragment)}
+        val swipeEditHandler = object : SwipeToEditCallback(requireContext()) {
+            override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+                val position = viewHolder.adapterPosition
+
+                // Send course data to update screen
+                val action = GolfPoiListFragmentDirections.actionGolfPoiListFragmentToGolfPoiFragment(
+                    app.golfPOIData.findPOI(position)
+                )
+                findNavController().navigate(action)
             }
-        }*/
+        }
 
         loginViewModel.addFirebaseStateListener(authStateListener)
+        // Attach delete touch callback to the recyclerview
         val itemTouchDeleteHelper = ItemTouchHelper(swipeDeleteHandler)
         itemTouchDeleteHelper.attachToRecyclerView(fragBinding.recyclerView)
+        // Attach Edit touch callback to the recyclerview
+        val itemTouchEditHelper = ItemTouchHelper(swipeEditHandler)
+        itemTouchEditHelper.attachToRecyclerView(fragBinding.recyclerView)
+        // Set the listeners for the floating button and the refresh of the recycler
         setFabButtonListener(fragBinding)
         registerRefreshCallback(fragBinding)
 

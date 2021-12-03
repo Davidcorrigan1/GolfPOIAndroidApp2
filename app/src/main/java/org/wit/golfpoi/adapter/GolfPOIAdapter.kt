@@ -65,12 +65,8 @@ class GolfPOIAdapter constructor(private var golfPOIs: ArrayList<GolfPOIModel>,
             binding.golfPOIProvince.text = golfPOI.courseProvince
 
             if (currentUser.favorites.contains(golfPOI.id)) {
-                i("currentFavourites: ${currentUser.favorites}")
-                i("CurrentCourse: ${golfPOI.id}")
                 binding.favoriteBtn.setImageResource(R.drawable.ic_baseline_favorite_24)
             } else {
-                i("currentFavourites: ${currentUser.favorites}")
-                i("CurrentCourse: ${golfPOI.id}")
                 binding.favoriteBtn.setImageResource(R.drawable.ic_baseline_favorite_border_24)
             }
 

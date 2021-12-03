@@ -6,14 +6,22 @@
     android:layout_height="match_parent"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
-
+    <FrameLayout
+        android:layout_width="380dp"
+        android:layout_height="500dp"
+        android:layout_marginStart="4dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginEnd="4dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.5"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/cardView">
     <com.google.android.gms.maps.MapView
         android:id="@+id/mapView"
         android:layout_width="379dp"
         android:layout_height="500dp"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
+
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintVertical_bias="0.8"
@@ -22,6 +30,15 @@
         app:layout_constraintBottom_toTopOf="@id/cardView"
         tools:ignore="SpeakableTextPresentCheck" />
 
+        <com.google.android.material.chip.Chip
+            android:id="@+id/chip"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/favouriteText"
+            android:textSize="18dp"
+            android:checkable="true"
+            android:textColor="@color/red"/>
+    </FrameLayout>
 
     <androidx.cardview.widget.CardView
         xmlns:android="http://schemas.android.com/apk/res/android"
@@ -33,7 +50,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         android:layout_width="match_parent"
         android:layout_height="150dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginBottom="4dp"
         android:elevation="24dp">
 
         <RelativeLayout
