@@ -77,6 +77,10 @@ class GolfPOIJSONStore(private val context: Context) : GolfPOIStore {
         }
     }
 
+    override fun findPOI(position: Int): GolfPOIModel {
+        return golfPOIData.golfPOIs[position]
+    }
+
     // Find a Golf Course POI based on id
     override fun findPOI(id: Long): GolfPOIModel? {
         return golfPOIData.golfPOIs.find { p -> p.id == id }
