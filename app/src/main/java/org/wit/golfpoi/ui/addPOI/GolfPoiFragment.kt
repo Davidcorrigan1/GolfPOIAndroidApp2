@@ -37,7 +37,6 @@ import org.wit.golfpoi.helpers.showImagePicker
 import org.wit.golfpoi.main.MainApp
 import org.wit.golfpoi.models.GolfPOIModel
 import org.wit.golfpoi.models.Location
-import org.wit.golfpoi.ui.auth.LoggedInViewModel
 import org.wit.golfpoi.ui.auth.LoginViewModel
 import timber.log.Timber.i
 
@@ -50,7 +49,6 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
     private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
     private var _fragBinding: FragmentGolfPoiBinding? = null
     private val fragBinding get() = _fragBinding!!
-    private val loggedInViewModel : LoggedInViewModel by activityViewModels()
     private val loginViewModel : LoginViewModel by activityViewModels()
     var defaultLocation = Location("Current", 52.245696, -7.139102, 13f)
     var setProvinces : String = ""
@@ -159,7 +157,7 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
             saveGolfCourseData(fragBinding)
             return false
         } else if (item.itemId == R.id.golfLoginFragment) {
-            loggedInViewModel.logOut()
+            loginViewModel.logOut()
             return false
         } else if (item.itemId == R.id.golfPoiFavourite) {
             if (golfPOI.courseTitle.isNotEmpty()) {

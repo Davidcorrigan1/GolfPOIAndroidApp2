@@ -24,21 +24,17 @@ import com.google.firebase.auth.FirebaseAuth
 import org.wit.golfpoi.R
 import org.wit.golfpoi.adapter.GolfPOIAdapter
 import org.wit.golfpoi.adapter.GolfPOIListener
-import org.wit.golfpoi.databinding.FragmentGolfPoiBinding
 import org.wit.golfpoi.databinding.FragmentGolfPoiListBinding
 import org.wit.golfpoi.helpers.SwipeToDeleteCallback
-import org.wit.golfpoi.helpers.showImagePicker
 import org.wit.golfpoi.main.MainApp
 import org.wit.golfpoi.models.GolfPOIModel
 import org.wit.golfpoi.models.GolfUserModel
-import org.wit.golfpoi.ui.auth.LoggedInViewModel
 import org.wit.golfpoi.ui.auth.LoginViewModel
 import timber.log.Timber.i
 
 
 class GolfPoiListFragment : Fragment(), GolfPOIListener{
     private lateinit var golfPoiListViewModel : GolfPoiListViewModel
-    private val loggedInViewModel : LoggedInViewModel by activityViewModels()
     private val loginViewModel : LoginViewModel by activityViewModels()
     lateinit var app: MainApp
     private lateinit var refreshIntentLauncher : ActivityResultLauncher<Intent>
@@ -52,6 +48,7 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
         super.onCreate(savedInstanceState)
         app = activity?.application as MainApp
 
+        i("Firebase - onCreate Entered")
         currentUser = app.golfPOIData.getCurrentUser()
 
         // Disable the back button here so user can't backpress to login screen
@@ -72,9 +69,10 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
         val root = fragBinding.root
 
         activity?.title = getString(R.string.app_name)
+        i("Firebase - onCreateView Entered")
 
         fragBinding.recyclerView.setLayoutManager(LinearLayoutManager(activity))
-        loadGolfPOIs()
+        loadGolfPOIs(app.golfPOIData.getCurrentUser())
 
         val swipeDeleteHandler = object : SwipeToDeleteCallback(requireContext()) {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
@@ -90,11 +88,25 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
             }
         }
 
+        /*// defining listener callback to check user authorisation
+        val authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
+            val firebaseUser = firebaseAuth.currentUser
+            if (firebaseUser != null) {
+                i("Firebase authStateLister Called")
+                i("Firebase User: ${firebaseUser.email}")
+                app.golfPOIData.findUser(firebaseUser?.email.toString())
+                    ?.let { app.golfPOIData.setCurrentUser(it) }
+                loadGolfPOIs(app.golfPOIData.getCurrentUser())
+                fragBinding.recyclerView.adapter?.notifyDataSetChanged()
+            } else {
+                view?.post { findNavController().navigate(R.id.action_golfPoiListFragment_to_golfLoginFragment)}
+            }
+        }*/
 
+        loginViewModel.addFirebaseStateListener(authStateListener)
         val itemTouchDeleteHelper = ItemTouchHelper(swipeDeleteHandler)
         itemTouchDeleteHelper.attachToRecyclerView(fragBinding.recyclerView)
         setFabButtonListener(fragBinding)
-        loginViewModel.addFirebaseStateListener(authStateListener)
         registerRefreshCallback(fragBinding)
 
         return root
@@ -102,6 +114,7 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
 
     override fun onStart() {
         super.onStart()
+        i("Firebase - onStart Entered")
         golfPoiListViewModel = ViewModelProvider(activity as AppCompatActivity).get(GolfPoiListViewModel::class.java)
     }
 
@@ -111,7 +124,7 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
 
     override fun onResume() {
         super.onResume()
-        i("fragment resuming")
+        i("Firebase - onResume Entered")
         currentUser = app.golfPOIData.getCurrentUser()
         fragBinding.recyclerView.adapter?.notifyDataSetChanged()
     }
@@ -179,7 +192,7 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
             if (switchOn) {
                 loadGolfPOIs(app.golfPOIData.getCurrentUser().id, favourites = false)
             } else {
-                loadGolfPOIs()
+                loadGolfPOIs(app.golfPOIData.getCurrentUser())
             }
         }
         super.onCreateOptionsMenu(menu, inflater)
@@ -193,7 +206,7 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
                 loadGolfPOIs(app.golfPOIData.getCurrentUser().id,favourites = true)
                 return false
             } else if (item.itemId == R.id.golfLoginFragment) {
-                loggedInViewModel.logOut()
+                loginViewModel.logOut()
                 return false
             } else {
                 return NavigationUI.onNavDestinationSelected(item,
@@ -205,11 +218,11 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
     private fun registerRefreshCallback(layout: FragmentGolfPoiListBinding) {
         refreshIntentLauncher =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult())
-            { loadGolfPOIs() }
+            { loadGolfPOIs(app.golfPOIData.getCurrentUser()) }
     }
 
     // Load all Golf courses function
-    private fun loadGolfPOIs() {
+    private fun loadGolfPOIs(currentUser: GolfUserModel) {
         showGolfPOIs(ArrayList(app.golfPOIData.findAllPOIs()), currentUser)
     }
 
@@ -235,7 +248,7 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
                  it.coursePar.toString().contains(query.lowercase())})
             showGolfPOIs(searchResults, currentUser)
         } else {
-            loadGolfPOIs()
+            loadGolfPOIs(app.golfPOIData.getCurrentUser())
         }
     }
 
@@ -248,13 +261,15 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
     // defining listener callback to check user authorisation
     val authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
         val firebaseUser = firebaseAuth.currentUser
-        app.golfPOIData.findUser(firebaseUser?.email.toString())
-            ?.let { app.golfPOIData.setCurrentUser(it) }
-
-        if (firebaseUser == null) {
-            view?.post { findNavController().navigate(R.id.action_golfPoiListFragment_to_golfLoginFragment)}
-        } else {
+        if (firebaseUser != null) {
+            i("Firebase authStateLister Called")
+            i("Firebase User: ${firebaseUser.email}")
+            app.golfPOIData.findUser(firebaseUser?.email.toString())
+                ?.let { app.golfPOIData.setCurrentUser(it) }
+            loadGolfPOIs(app.golfPOIData.getCurrentUser())
             fragBinding.recyclerView.adapter?.notifyDataSetChanged()
+        } else {
+            view?.post { findNavController().navigate(R.id.action_golfPoiListFragment_to_golfLoginFragment)}
         }
     }
 
