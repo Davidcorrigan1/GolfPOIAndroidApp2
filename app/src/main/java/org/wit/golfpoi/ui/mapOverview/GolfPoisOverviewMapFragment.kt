@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.*
 import android.widget.SearchView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.widget.SwitchCompat
@@ -34,7 +35,7 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
     private var _fragBinding: FragmentGolfPoisOverviewMapBinding? = null
     private lateinit var contentBinding: CardMapGolfpoiBinding
     private val fragBinding get() = _fragBinding!!
-    private lateinit var selectedGolfPOI : GolfPOIModel
+    private lateinit var selectedGolfPOI: GolfPOIModel
     private var searchView: SearchView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -55,20 +56,24 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
 
         contentBinding = CardMapGolfpoiBinding.bind(fragBinding.root)
 
-        contentBinding.cardView.setOnClickListener{
-                val action =
-                    GolfPoisOverviewMapFragmentDirections.actionGolfPoisOverviewMapFragmentToGolfPoiFragment(selectedGolfPOI)
-                findNavController().navigate(action)
+        contentBinding.cardView.setOnClickListener {
+            val action =
+                GolfPoisOverviewMapFragmentDirections.actionGolfPoisOverviewMapFragmentToGolfPoiFragment(
+                    selectedGolfPOI
+                )
+            findNavController().navigate(action)
         }
 
         contentBinding.mapView.onCreate(savedInstanceState)
-        contentBinding.mapView.getMapAsync{
+        contentBinding.mapView.getMapAsync {
             map = it
             configureMap(golfPOIs)
         }
         onChipCheckedCallback(contentBinding)
+        onClickFavButtionCallback(contentBinding)
         return root
     }
+
 
     // This configures the overview map based on the List of courses passed in to display
     private fun configureMap(golfPOIs: List<GolfPOIModel>) {
@@ -100,7 +105,8 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
                         1300,
                         1300,
                         50
-                    ))
+                    )
+                )
             } else
             // Zoom differently when only a single course returned.
             {
@@ -163,19 +169,41 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
     // Back button callback
     private val backPressedCallback = object : OnBackPressedCallback(true) {
         override fun handleOnBackPressed() {
-            val action = GolfPoisOverviewMapFragmentDirections.actionGolfPoisOverviewMapFragmentToGolfPoiListFragment()
+            val action =
+                GolfPoisOverviewMapFragmentDirections.actionGolfPoisOverviewMapFragmentToGolfPoiListFragment()
             findNavController().navigate(action)
         }
     }
 
     // Callback for Favourites Chip checked
-    private fun onChipCheckedCallback (layout: CardMapGolfpoiBinding) {
+    private fun onChipCheckedCallback(layout: CardMapGolfpoiBinding) {
         layout.chip.setOnCheckedChangeListener { chip, isChecked ->
-            if(isChecked) {
-                configureMap(loadGolfPOIs(app.golfPOIData.getCurrentUser().id,favourites = true))
+            if (isChecked) {
+                val displayCourses = loadGolfPOIs(app.golfPOIData.getCurrentUser().id , favourites = true)
+                if (displayCourses.size.equals(0)) {
+                    displayCourses == app.golfPOIData.findAllPOIs()
+                    Toast.makeText(context, "No Favourites to display, showing all courses", Toast.LENGTH_LONG).show()
+                    configureMap(loadGolfPOIs())
+                } else {
+                    configureMap(displayCourses)
+                }
             } else {
                 configureMap(loadGolfPOIs())
             }
+        }
+    }
+
+    // Callback for the favourites button in the Card View on Overview Map
+    private fun onClickFavButtionCallback(contentBinding: CardMapGolfpoiBinding) {
+        contentBinding.favoriteBtn.setOnClickListener {
+            var updatedUser = app.golfPOIData.getCurrentUser()
+            if (updatedUser.favorites.contains(selectedGolfPOI.id)) {
+                updatedUser.favorites.remove(selectedGolfPOI.id)
+            } else {
+                updatedUser.favorites.add(selectedGolfPOI.id)
+            }
+            app.golfPOIData.updateUser(updatedUser)
+            populateMarkerCard(selectedGolfPOI.id)
         }
     }
 
@@ -242,7 +270,14 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
         val userSwitch: SwitchCompat = menu.findItem(R.id.user_switch).actionView as SwitchCompat
         userSwitch.setOnCheckedChangeListener { compoundButton, switchOn ->
             if (switchOn) {
-                configureMap(loadGolfPOIs(app.golfPOIData.getCurrentUser().id))
+                val displayCourses = loadGolfPOIs(app.golfPOIData.getCurrentUser().id)
+                if (displayCourses.size.equals(0)) {
+                    displayCourses == app.golfPOIData.findAllPOIs()
+                    Toast.makeText(context, "No User courses to display, showing all courses", Toast.LENGTH_SHORT).show()
+                    configureMap(loadGolfPOIs())
+                } else {
+                    configureMap(displayCourses)
+                }
             } else {
                 configureMap(loadGolfPOIs())
             }
