@@ -12,7 +12,6 @@ import com.google.firebase.auth.FirebaseUser
 import org.wit.golfpoi.R
 import org.wit.golfpoi.databinding.HomeBinding
 import org.wit.golfpoi.databinding.NavHeaderBinding
-import org.wit.golfpoi.ui.auth.LoggedInViewModel
 import androidx.lifecycle.Observer
 import androidx.navigation.NavDeepLinkBuilder
 import org.wit.golfpoi.ui.auth.LoginViewModel
@@ -25,13 +24,11 @@ class Home : AppCompatActivity() {
     private lateinit var homeBinding : HomeBinding
     private lateinit var navHeaderBinding : NavHeaderBinding
     private lateinit var appBarConfiguration: AppBarConfiguration
-    private lateinit var loggedInViewModel : LoggedInViewModel
     private lateinit var loginViewModel : LoginViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        loggedInViewModel = ViewModelProvider(this).get(LoggedInViewModel::class.java)
         loginViewModel = ViewModelProvider(this).get(LoginViewModel::class.java)
         homeBinding = HomeBinding.inflate(layoutInflater)
         setContentView(homeBinding.root)
@@ -53,10 +50,10 @@ class Home : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        loggedInViewModel = ViewModelProvider(this).get(LoggedInViewModel::class.java)
-        loggedInViewModel.liveFirebaseUser.observe(this, Observer { firebaseUser ->
+        loginViewModel.liveFirebaseUser.observe(this, Observer { firebaseUser ->
             if (firebaseUser != null) {
-                updateNavHeader(loggedInViewModel.liveFirebaseUser.value!!)
+                i("Firebase Home Onstart")
+                updateNavHeader(loginViewModel.liveFirebaseUser.value!!)
             }
         })
 
@@ -80,7 +77,7 @@ class Home : AppCompatActivity() {
     // Triggered from the nav_drawer_menu
     fun signOut(item: MenuItem) {
         i("Firebase Nav Drawer log out")
-        loggedInViewModel.logOut()
+        loginViewModel.logOut()
         val pendingIntent = NavDeepLinkBuilder(this.applicationContext)
             .setGraph(R.navigation.main_navigation)
             .setDestination(R.id.golfLoginFragment)

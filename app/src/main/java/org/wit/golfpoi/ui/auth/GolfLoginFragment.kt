@@ -7,9 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.activity.OnBackPressedCallback
 import androidx.lifecycle.Observer
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
@@ -24,7 +22,6 @@ import timber.log.Timber.i
 
 class GolfLoginFragment : Fragment() {
     private val loginViewModel : LoginViewModel by activityViewModels()
-    private val loggedInViewModel : LoggedInViewModel by activityViewModels()
     lateinit var app: MainApp
     private var _fragBinding: FragmentGolfLoginBinding? = null
     private val fragBinding get() = _fragBinding!!
@@ -53,6 +50,8 @@ class GolfLoginFragment : Fragment() {
             if (firebaseUser != null) {
                 i("Firebase authStateLister Called")
                 i("Firebase User: ${firebaseUser.email}")
+                app.golfPOIData.findUser(firebaseUser?.email.toString())
+                    ?.let { app.golfPOIData.setCurrentUser(it) }
                 view?.post { findNavController().navigate(R.id.action_golfLoginFragment_to_golfPoiListFragment)}
             }
         }
@@ -68,7 +67,7 @@ class GolfLoginFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
+        i("Firebase - onViewCreated Entered")
         loginViewModel.firebaseAuthManager.errorStatus.observe(viewLifecycleOwner, Observer
         { status -> checkStatus(status) })
     }
