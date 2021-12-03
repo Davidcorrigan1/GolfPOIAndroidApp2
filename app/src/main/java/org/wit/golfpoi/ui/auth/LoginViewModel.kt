@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import org.wit.golfpoi.firebase.FirebaseAuthManager
+import timber.log.Timber
 
 class LoginViewModel (app: Application) : AndroidViewModel(app) {
 
@@ -14,6 +15,10 @@ class LoginViewModel (app: Application) : AndroidViewModel(app) {
 
     fun login(email: String?, password: String?) {
         firebaseAuthManager.login(email, password)
+    }
+
+    fun logOut() {
+        firebaseAuthManager.logOut()
     }
 
     fun addFirebaseStateListener(listener: FirebaseAuth.AuthStateListener){

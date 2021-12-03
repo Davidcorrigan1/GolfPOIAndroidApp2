@@ -11,7 +11,6 @@ import timber.log.Timber.i
 class RegisterViewModel (app: Application) : AndroidViewModel(app) {
 
     var firebaseAuthManager : FirebaseAuthManager = FirebaseAuthManager(app)
-    var liveFirebaseUser : MutableLiveData<FirebaseUser> = firebaseAuthManager.liveFirebaseUser
 
     fun register(email: String?, password: String?) {
         i("Contacting Firebase to register : $email")

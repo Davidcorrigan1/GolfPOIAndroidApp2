@@ -19,7 +19,6 @@ import org.wit.golfpoi.databinding.FragmentGolfPoiRegisterBinding
 import org.wit.golfpoi.main.MainApp
 import org.wit.golfpoi.models.GolfUserModel
 import org.wit.golfpoi.ui.auth.GolfLoginFragment
-import org.wit.golfpoi.ui.auth.LoggedInViewModel
 import org.wit.golfpoi.ui.auth.LoginViewModel
 import timber.log.Timber
 import java.time.LocalDate
@@ -28,7 +27,6 @@ class GolfPoiRegisterFragment : Fragment() {
 
     lateinit var app: MainApp
     private lateinit var registerViewModel: RegisterViewModel
-    private val loggedInViewModel : LoggedInViewModel by activityViewModels()
     private val loginViewModel : LoginViewModel by activityViewModels()
 
     private var _fragBinding: FragmentGolfPoiRegisterBinding? = null
