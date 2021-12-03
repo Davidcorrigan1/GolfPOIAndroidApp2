@@ -19,6 +19,7 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.squareup.picasso.Picasso
 import org.wit.golfpoi.R
 import org.wit.golfpoi.databinding.CardMapGolfpoiBinding
+import org.wit.golfpoi.databinding.FragmentGolfPoiListBinding
 import org.wit.golfpoi.databinding.FragmentGolfPoisOverviewMapBinding
 import org.wit.golfpoi.main.MainApp
 import org.wit.golfpoi.models.GolfPOIModel
@@ -65,6 +66,7 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
             map = it
             configureMap(golfPOIs)
         }
+        onChipCheckedCallback(contentBinding)
         return root
     }
 
@@ -166,12 +168,25 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
         }
     }
 
+    // Callback for Favourites Chip checked
+    private fun onChipCheckedCallback (layout: CardMapGolfpoiBinding) {
+        layout.chip.setOnCheckedChangeListener { chip, isChecked ->
+            if(isChecked) {
+                configureMap(loadGolfPOIs(app.golfPOIData.getCurrentUser().id,favourites = true))
+            } else {
+                configureMap(loadGolfPOIs())
+            }
+        }
+    }
+
+    // Callback for click of a Marker
     override fun onMarkerClick(marker: Marker): Boolean {
         i("marker id: ${marker.tag}")
         populateMarkerCard (marker.tag!!)
         return false
     }
 
+    // Populate the Card for marker clicked
     private fun populateMarkerCard (id: Any) {
         var golfPOIMarker = golfPOIs.find { golfPOI -> golfPOI.id == id }
         if (golfPOIMarker != null) {
@@ -262,6 +277,16 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
         }
     }
 
+    // Load Golf course which were created by the current user
+    private fun loadGolfPOIs(id: Long, favourites: Boolean) : List<GolfPOIModel> {
+        if (favourites) {
+            var favouriteCourses = ArrayList(app.golfPOIData.findUsersFavouriteCourses(id))
+            return favouriteCourses
+        } else {
+            var userFilteredCourses = ArrayList(app.golfPOIData.findByCreatedByUserId(id))
+            return userFilteredCourses
+        }
+    }
 
 
 }
