@@ -20,12 +20,25 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.squareup.picasso.Picasso
 import org.wit.golfpoi.R
 import org.wit.golfpoi.databinding.CardMapGolfpoiBinding
-import org.wit.golfpoi.databinding.FragmentGolfPoiListBinding
 import org.wit.golfpoi.databinding.FragmentGolfPoisOverviewMapBinding
 import org.wit.golfpoi.main.MainApp
 import org.wit.golfpoi.models.GolfPOIModel
-import timber.log.Timber
 import timber.log.Timber.i
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
+
+import android.graphics.Bitmap
+import android.graphics.Canvas
+
+import androidx.core.content.ContextCompat
+
+import com.google.android.gms.maps.model.BitmapDescriptor
+import androidx.annotation.DrawableRes
+
+
+
+
+
+
 
 
 class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener {
@@ -37,6 +50,8 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
     private val fragBinding get() = _fragBinding!!
     private lateinit var selectedGolfPOI: GolfPOIModel
     private var searchView: SearchView? = null
+    private var showFavourites = false
+    private var showUserCreated = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,60 +87,6 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
         onChipCheckedCallback(contentBinding)
         onClickFavButtionCallback(contentBinding)
         return root
-    }
-
-
-    // This configures the overview map based on the List of courses passed in to display
-    private fun configureMap(golfPOIs: List<GolfPOIModel>) {
-        map.setOnMarkerClickListener(this)
-        map.uiSettings.isZoomControlsEnabled = true
-
-        // create a BoundsBuilder object to help frame the map
-        // For each golfCourse in the Arraylist from last Activity
-        // if the location is populated create Latlng object
-        // Include each map location in the boundsBuilder
-        // Create a marker for each golf course with title and desc included.
-        val boundsBuilder = LatLngBounds.builder()
-        if (golfPOIs.size > 0) {
-            for (golfPOI in golfPOIs) {
-                if (golfPOI.lat != 0.0 && golfPOI.lng != 0.0) {
-                    val latlng = LatLng(golfPOI.lat, golfPOI.lng)
-                    boundsBuilder.include(latlng)
-                    map.addMarker(
-                        MarkerOptions().position(latlng).title(golfPOI.courseTitle)
-                    )?.tag = golfPOI.id
-
-                }
-            }
-            // Move the'camera' for that it zooms to show all the Golf Courses
-            if (golfPOIs.size > 1) {
-                map.moveCamera(
-                    CameraUpdateFactory.newLatLngBounds(
-                        boundsBuilder.build(),
-                        1300,
-                        1300,
-                        50
-                    )
-                )
-            } else
-            // Zoom differently when only a single course returned.
-            {
-                val latlng = LatLng(golfPOIs[0].lat, golfPOIs[0].lng)
-                map.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, 12f))
-            }
-            populateMarkerCard(golfPOIs.last().id)
-        } else {
-            val latlng = LatLng(52.490, -6.272)
-            boundsBuilder.include(latlng)
-            map.moveCamera(
-                CameraUpdateFactory.newLatLngBounds(
-                    boundsBuilder.build(),
-                    1300,
-                    1300,
-                    50
-                )
-            )
-        }
     }
 
     companion object {
@@ -179,6 +140,8 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
     private fun onChipCheckedCallback(layout: CardMapGolfpoiBinding) {
         layout.chip.setOnCheckedChangeListener { chip, isChecked ->
             if (isChecked) {
+                showFavourites = true
+                showUserCreated = false
                 val displayCourses = loadGolfPOIs(app.golfPOIData.getCurrentUser().id , favourites = true)
                 if (displayCourses.size.equals(0)) {
                     displayCourses == app.golfPOIData.findAllPOIs()
@@ -188,6 +151,7 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
                     configureMap(displayCourses)
                 }
             } else {
+                showFavourites = false
                 configureMap(loadGolfPOIs())
             }
         }
@@ -270,6 +234,8 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
         val userSwitch: SwitchCompat = menu.findItem(R.id.user_switch).actionView as SwitchCompat
         userSwitch.setOnCheckedChangeListener { compoundButton, switchOn ->
             if (switchOn) {
+                showUserCreated = true
+                showFavourites = false
                 val displayCourses = loadGolfPOIs(app.golfPOIData.getCurrentUser().id)
                 if (displayCourses.size.equals(0)) {
                     displayCourses == app.golfPOIData.findAllPOIs()
@@ -279,6 +245,7 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
                     configureMap(displayCourses)
                 }
             } else {
+                showUserCreated = false
                 configureMap(loadGolfPOIs())
             }
         }
@@ -323,5 +290,87 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
         }
     }
 
+    // This configures the overview map based on the List of courses passed in to display
+    private fun configureMap(mapGolfPOIs: List<GolfPOIModel>) {
+        map.clear()
+        map.setOnMarkerClickListener(this)
+        map.uiSettings.isZoomControlsEnabled = true
+
+        // create a BoundsBuilder object to help frame the map
+        // For each golfCourse in the Arraylist from last Activity
+        // if the location is populated create Latlng object
+        // Include each map location in the boundsBuilder
+        // Create a marker for each golf course with title and desc included.
+        val boundsBuilder = LatLngBounds.builder()
+        if (mapGolfPOIs.isNotEmpty()) {
+            for (mapGolfPOI in mapGolfPOIs) {
+                if (mapGolfPOI.lat != 0.0 && mapGolfPOI.lng != 0.0) {
+                    val latlng = LatLng(mapGolfPOI.lat, mapGolfPOI.lng)
+                    boundsBuilder.include(latlng)
+                    if (showFavourites) {
+                        map.addMarker(
+                            MarkerOptions().position(latlng).title(mapGolfPOI.courseTitle).icon(
+                                context?.let { bitmapDescriptorFromVector(it,R.drawable.ic_baseline_favorite_red_48) })
+                        )?.tag = mapGolfPOI.id
+                    } else if (showUserCreated) {
+                        map.addMarker(
+                            MarkerOptions().position(latlng).title(mapGolfPOI.courseTitle).icon(
+                                context?.let { bitmapDescriptorFromVector(it,R.drawable.ic_baseline_person_pin_circle_48) })
+                        )?.tag = mapGolfPOI.id
+                    } else
+                        map.addMarker(
+                            MarkerOptions().position(latlng).title(mapGolfPOI.courseTitle)
+                        )?.tag = mapGolfPOI.id
+                }
+            }
+            // Move the'camera' for that it zooms to show all the Golf Courses
+            if (mapGolfPOIs.size > 1) {
+                map.moveCamera(
+                    CameraUpdateFactory.newLatLngBounds(
+                        boundsBuilder.build(),
+                        1300,
+                        1300,
+                        50
+                    )
+                )
+            } else
+            // Zoom differently when only a single course returned.
+            {
+                val latlng = LatLng(mapGolfPOIs[0].lat, mapGolfPOIs[0].lng)
+                map.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, 12f))
+            }
+            populateMarkerCard(mapGolfPOIs.last().id)
+        } else {
+            val latlng = LatLng(52.490, -6.272)
+            boundsBuilder.include(latlng)
+            map.moveCamera(
+                CameraUpdateFactory.newLatLngBounds(
+                    boundsBuilder.build(),
+                    1300,
+                    1300,
+                    50
+                )
+            )
+        }
+    }
+
+    // creating bitmap descriptor see: https://stackoverflow.com/questions/42365658/custom-marker-in-google-maps-in-android-with-vector-asset-icon
+    private fun bitmapDescriptorFromVector(context: Context, vectorResId: Int): BitmapDescriptor? {
+        val vectorDrawable = ContextCompat.getDrawable(context, vectorResId)
+        vectorDrawable!!.setBounds(
+            0,
+            0,
+            vectorDrawable.intrinsicWidth,
+            vectorDrawable.intrinsicHeight
+        )
+        val bitmap = Bitmap.createBitmap(
+            vectorDrawable.intrinsicWidth,
+            vectorDrawable.intrinsicHeight,
+            Bitmap.Config.ARGB_8888
+        )
+        val canvas = Canvas(bitmap)
+        vectorDrawable.draw(canvas)
+        return BitmapDescriptorFactory.fromBitmap(bitmap)
+    }
 
 }
