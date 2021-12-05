@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.activity.OnBackPressedCallback
 import androidx.lifecycle.Observer
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
@@ -31,6 +32,13 @@ class GolfLoginFragment : Fragment() {
         super.onCreate(savedInstanceState)
         app = activity?.application as MainApp
         i("Firebase - onCreate Entered")
+
+        // Disable the back button here so user can't backpress to login screen
+        activity?.onBackPressedDispatcher?.addCallback(this,object : OnBackPressedCallback(true){
+            override fun handleOnBackPressed() {
+                i("Firebase: Doing nothing on Backpress!")
+            }
+        })
 
     }
 
