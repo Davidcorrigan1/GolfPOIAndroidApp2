@@ -124,6 +124,8 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
 
     override fun onResume() {
         super.onResume()
+        showUserCreated = false
+        showFavourites = false
         contentBinding.mapView.onResume()
     }
 
