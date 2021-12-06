@@ -17,8 +17,3 @@ data class GolfPOIModel(var id: Long = 0,
                         var createdById: Long = 0 ) : Parcelable
 
 
-@Parcelize
-data class Location(var name: String = "",
-                    var lat: Double = 0.0,
-                    var lng: Double = 0.0,
-                    var zoom: Float = 0f) : Parcelable

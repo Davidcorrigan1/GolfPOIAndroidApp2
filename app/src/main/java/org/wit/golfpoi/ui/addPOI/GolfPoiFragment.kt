@@ -37,7 +37,7 @@ import org.wit.golfpoi.helpers.showImagePicker
 import org.wit.golfpoi.main.MainApp
 import org.wit.golfpoi.models.GolfPOIModel
 import org.wit.golfpoi.models.Location
-import org.wit.golfpoi.ui.auth.LoginViewModel
+import org.wit.golfpoi.ui.auth.GolfLoginViewModel
 import timber.log.Timber.i
 
 
@@ -49,7 +49,7 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
     private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
     private var _fragBinding: FragmentGolfPoiBinding? = null
     private val fragBinding get() = _fragBinding!!
-    private val loginViewModel : LoginViewModel by activityViewModels()
+    private val golfLoginViewModel : GolfLoginViewModel by activityViewModels()
     var defaultLocation = Location("Current", 52.245696, -7.139102, 13f)
     var setProvinces : String = ""
     lateinit var map: GoogleMap
@@ -104,7 +104,7 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
         setSpinnerListener(spinner, provinces)
         registerImagePickerCallback(fragBinding)
         setImageButtonListener(fragBinding)
-        loginViewModel.addFirebaseStateListener(authStateListener)
+        golfLoginViewModel.addFirebaseStateListener(authStateListener)
 
         fragBinding.mapViewSmall.onCreate(savedInstanceState)
         fragBinding.mapViewSmall.getMapAsync(this)
@@ -157,7 +157,7 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
             saveGolfCourseData(fragBinding)
             return false
         } else if (item.itemId == R.id.golfLoginFragment) {
-            loginViewModel.logOut()
+            golfLoginViewModel.logOut()
             return false
         } else if (item.itemId == R.id.golfPoiFavourite) {
             if (golfPOI.courseTitle.isNotEmpty()) {

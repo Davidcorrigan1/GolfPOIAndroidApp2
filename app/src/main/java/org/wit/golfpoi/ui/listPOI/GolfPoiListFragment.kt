@@ -30,13 +30,13 @@ import org.wit.golfpoi.helpers.SwipeToEditCallback
 import org.wit.golfpoi.main.MainApp
 import org.wit.golfpoi.models.GolfPOIModel
 import org.wit.golfpoi.models.GolfUserModel
-import org.wit.golfpoi.ui.auth.LoginViewModel
+import org.wit.golfpoi.ui.auth.GolfLoginViewModel
 import timber.log.Timber.i
 
 
 class GolfPoiListFragment : Fragment(), GolfPOIListener{
     private lateinit var golfPoiListViewModel : GolfPoiListViewModel
-    private val loginViewModel : LoginViewModel by activityViewModels()
+    private val golfLoginViewModel : GolfLoginViewModel by activityViewModels()
     lateinit var app: MainApp
     private lateinit var refreshIntentLauncher : ActivityResultLauncher<Intent>
     private var _fragBinding: FragmentGolfPoiListBinding? = null
@@ -99,7 +99,7 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
             }
         }
 
-        loginViewModel.addFirebaseStateListener(authStateListener)
+        golfLoginViewModel.addFirebaseStateListener(authStateListener)
         // Attach delete touch callback to the recyclerview
         val itemTouchDeleteHelper = ItemTouchHelper(swipeDeleteHandler)
         itemTouchDeleteHelper.attachToRecyclerView(fragBinding.recyclerView)
@@ -207,7 +207,7 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
                 loadGolfPOIs(app.golfPOIData.getCurrentUser().id,favourites = true)
                 return false
             } else if (item.itemId == R.id.golfLoginFragment) {
-                loginViewModel.logOut()
+                golfLoginViewModel.logOut()
                 return false
             } else {
                 return NavigationUI.onNavDestinationSelected(item,

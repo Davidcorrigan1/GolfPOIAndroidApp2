@@ -12,22 +12,23 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.snackbar.Snackbar
-import androidx.lifecycle.Observer
 import com.google.firebase.auth.FirebaseAuth
 import org.wit.golfpoi.R
 import org.wit.golfpoi.databinding.FragmentGolfPoiRegisterBinding
 import org.wit.golfpoi.main.MainApp
 import org.wit.golfpoi.models.GolfUserModel
+import org.wit.golfpoi.models.GolfUserModel2
 import org.wit.golfpoi.ui.auth.GolfLoginFragment
-import org.wit.golfpoi.ui.auth.LoginViewModel
+import org.wit.golfpoi.ui.auth.GolfLoginViewModel
 import timber.log.Timber
-import java.time.LocalDate
+import timber.log.Timber.i
+
 
 class GolfPoiRegisterFragment : Fragment() {
 
     lateinit var app: MainApp
-    private lateinit var registerViewModel: RegisterViewModel
-    private val loginViewModel : LoginViewModel by activityViewModels()
+    private lateinit var golfPoiRegisterViewModel: GolfPoiRegisterViewModel
+    private val golfLoginViewModel : GolfLoginViewModel by activityViewModels()
 
     private var _fragBinding: FragmentGolfPoiRegisterBinding? = null
     private val fragBinding get() = _fragBinding!!
@@ -47,7 +48,7 @@ class GolfPoiRegisterFragment : Fragment() {
         _fragBinding = FragmentGolfPoiRegisterBinding.inflate(inflater, container, false)
         val root = fragBinding?.root
 
-        registerViewModel = ViewModelProvider(activity as AppCompatActivity).get(RegisterViewModel::class.java)
+        golfPoiRegisterViewModel = ViewModelProvider(activity as AppCompatActivity).get(GolfPoiRegisterViewModel::class.java)
 
         Timber.i("Firebase - onCreateView Entered")
 
@@ -59,7 +60,7 @@ class GolfPoiRegisterFragment : Fragment() {
                 view?.post { findNavController().navigate(R.id.action_golfPoiRegisterFragment_to_golfPoiListFragment)}
             }
         }
-        loginViewModel.addFirebaseStateListener(authStateListener)
+        golfLoginViewModel.addFirebaseStateListener(authStateListener)
         setButtonListener(fragBinding)
 
         return root
@@ -79,9 +80,16 @@ class GolfPoiRegisterFragment : Fragment() {
         layout.btnRegister.setOnClickListener {
 
             if (validateForm()) {
-                registerViewModel.register(
+                val newUser = GolfUserModel2()
+                newUser.userEmail = layout.editTextEmail.text.toString()
+                newUser.firstName = layout.editTextFirstName.text.toString()
+                newUser.lastName = layout.editTextLastName.text.toString()
+                newUser.loginCount = 1
+                i("FirebaseDB Register1: $newUser")
+                golfPoiRegisterViewModel.register(
                     layout.editTextEmail.text.toString(),
-                    layout.editTextPassword.text.toString()
+                    layout.editTextPassword.text.toString(),
+                    newUser
                 )
             }
 
@@ -97,9 +105,6 @@ class GolfPoiRegisterFragment : Fragment() {
                     user.userEmail = layout.editTextEmail.text.toString()
                     user.firstName = layout.editTextFirstName.text.toString()
                     user.lastName = layout.editTextLastName.text.toString()
-                    user.userPassword = layout.editTextPassword.text.toString()
-                    user.lastLoginDate = LocalDate.now()
-                    user.loginCount = 1
                     app.golfPOIData.createUser(user)
                     app.golfPOIData.setCurrentUser(user)
                     // Setting the logged on user name in the NavDrawer

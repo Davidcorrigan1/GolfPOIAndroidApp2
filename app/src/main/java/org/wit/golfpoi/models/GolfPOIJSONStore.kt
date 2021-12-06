@@ -133,10 +133,8 @@ class GolfPOIJSONStore(private val context: Context) : GolfPOIStore {
             foundUser.lastName = user.lastName
             foundUser.firstName = user.firstName
             foundUser.userEmail = user.userEmail
-            foundUser.lastLoginDate = user.lastLoginDate
             foundUser.loginCount = user.loginCount
             foundUser.favorites = user.favorites
-            foundUser.userPassword = user.userPassword
             serialize(JSON_FILE_DATA, listTypeDATA)
             if (foundUser.id == currentUser.id) {
                 currentUser = foundUser

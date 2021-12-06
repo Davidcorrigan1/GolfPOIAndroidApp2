@@ -22,7 +22,7 @@ import timber.log.Timber.i
 
 
 class GolfLoginFragment : Fragment() {
-    private val loginViewModel : LoginViewModel by activityViewModels()
+    private val golfLoginViewModel : GolfLoginViewModel by activityViewModels()
     lateinit var app: MainApp
     private var _fragBinding: FragmentGolfLoginBinding? = null
     private val fragBinding get() = _fragBinding!!
@@ -67,7 +67,7 @@ class GolfLoginFragment : Fragment() {
         // Setting up listeners
         setLoginButtonListener(fragBinding)
         setRegisterButtonListener(fragBinding)
-        loginViewModel.addFirebaseStateListener(authStateListener)
+        golfLoginViewModel.addFirebaseStateListener(authStateListener)
 
         return root
 
@@ -76,7 +76,7 @@ class GolfLoginFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         i("Firebase - onViewCreated Entered")
-        loginViewModel.firebaseAuthManager.errorStatus.observe(viewLifecycleOwner, Observer
+        golfLoginViewModel.firebaseAuthManager.errorStatus.observe(viewLifecycleOwner, Observer
         { status -> checkStatus(status) })
     }
 
@@ -84,7 +84,7 @@ class GolfLoginFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         i("Firebase - onResume Entered")
-        loginViewModel.firebaseAuthManager.errorStatus.observe(viewLifecycleOwner, Observer
+        golfLoginViewModel.firebaseAuthManager.errorStatus.observe(viewLifecycleOwner, Observer
         { status -> checkStatus(status) })
 
     }
@@ -159,7 +159,7 @@ class GolfLoginFragment : Fragment() {
         if (!validateForm()) {
             return
         }
-        loginViewModel.login(email,password)
+        golfLoginViewModel.login(email,password)
 
     }
 

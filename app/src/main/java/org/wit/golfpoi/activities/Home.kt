@@ -14,7 +14,7 @@ import org.wit.golfpoi.databinding.HomeBinding
 import org.wit.golfpoi.databinding.NavHeaderBinding
 import androidx.lifecycle.Observer
 import androidx.navigation.NavDeepLinkBuilder
-import org.wit.golfpoi.ui.auth.LoginViewModel
+import org.wit.golfpoi.ui.auth.GolfLoginViewModel
 import timber.log.Timber.i
 
 
@@ -24,12 +24,12 @@ class Home : AppCompatActivity() {
     private lateinit var homeBinding : HomeBinding
     private lateinit var navHeaderBinding : NavHeaderBinding
     private lateinit var appBarConfiguration: AppBarConfiguration
-    private lateinit var loginViewModel : LoginViewModel
+    private lateinit var golfLoginViewModel : GolfLoginViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        loginViewModel = ViewModelProvider(this).get(LoginViewModel::class.java)
+        golfLoginViewModel = ViewModelProvider(this).get(GolfLoginViewModel::class.java)
         homeBinding = HomeBinding.inflate(layoutInflater)
         setContentView(homeBinding.root)
         drawerLayout = homeBinding.drawerLayout
@@ -50,10 +50,10 @@ class Home : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        loginViewModel.liveFirebaseUser.observe(this, Observer { firebaseUser ->
+        golfLoginViewModel.liveFirebaseUser.observe(this, Observer { firebaseUser ->
             if (firebaseUser != null) {
                 i("Firebase Home Onstart")
-                updateNavHeader(loginViewModel.liveFirebaseUser.value!!)
+                updateNavHeader(golfLoginViewModel.liveFirebaseUser.value!!)
             }
         })
 
@@ -77,7 +77,7 @@ class Home : AppCompatActivity() {
     // Triggered from the nav_drawer_menu
     fun signOut(item: MenuItem) {
         i("Firebase Nav Drawer log out")
-        loginViewModel.logOut()
+        golfLoginViewModel.logOut()
         val pendingIntent = NavDeepLinkBuilder(this.applicationContext)
             .setGraph(R.navigation.main_navigation)
             .setDestination(R.id.golfLoginFragment)

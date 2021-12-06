@@ -8,7 +8,7 @@ import com.google.firebase.auth.FirebaseUser
 import org.wit.golfpoi.firebase.FirebaseAuthManager
 import timber.log.Timber
 
-class LoginViewModel (app: Application) : AndroidViewModel(app) {
+class GolfLoginViewModel (app: Application) : AndroidViewModel(app) {
 
     var firebaseAuthManager : FirebaseAuthManager = FirebaseAuthManager(app)
     var liveFirebaseUser : MutableLiveData<FirebaseUser> = firebaseAuthManager.liveFirebaseUser
