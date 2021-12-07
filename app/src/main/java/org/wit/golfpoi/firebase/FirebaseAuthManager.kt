@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.MutableLiveData
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import org.wit.golfpoi.models.GolfUserModel2
 import timber.log.Timber
 import timber.log.Timber.i
 
@@ -45,7 +46,7 @@ class FirebaseAuthManager(application: Application) {
             })
     }
 
-    fun register(email: String?, password: String?) {
+    fun register(email: String?, password: String?, user: GolfUserModel2) {
         firebaseAuth!!.createUserWithEmailAndPassword(email!!, password!!)
             .addOnCompleteListener(application!!.mainExecutor, { task ->
                 if (task.isSuccessful) {
@@ -53,6 +54,8 @@ class FirebaseAuthManager(application: Application) {
                     liveFirebaseUser.postValue(firebaseAuth!!.currentUser)
                     loggedOut.postValue(false)
                     errorStatus.postValue(false)
+                    user.uid = firebaseAuth!!.currentUser?.uid!!
+                    FirebaseDBManager.createUser(user)
                 } else {
                     Timber.i( "Firebase Registration Failure: $task.exception!!.message")
                     errorStatus.postValue(true)

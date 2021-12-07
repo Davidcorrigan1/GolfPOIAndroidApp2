@@ -18,6 +18,7 @@ import org.wit.golfpoi.R
 import org.wit.golfpoi.databinding.FragmentGolfPoiRegisterBinding
 import org.wit.golfpoi.main.MainApp
 import org.wit.golfpoi.models.GolfUserModel
+import org.wit.golfpoi.models.GolfUserModel2
 import org.wit.golfpoi.ui.auth.GolfLoginFragment
 import org.wit.golfpoi.ui.auth.LoginViewModel
 import timber.log.Timber
@@ -32,6 +33,7 @@ class GolfPoiRegisterFragment : Fragment() {
     private var _fragBinding: FragmentGolfPoiRegisterBinding? = null
     private val fragBinding get() = _fragBinding!!
     var user = GolfUserModel()
+    var newUser = GolfUserModel2()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -79,9 +81,18 @@ class GolfPoiRegisterFragment : Fragment() {
         layout.btnRegister.setOnClickListener {
 
             if (validateForm()) {
+                newUser.userEmail = layout.editTextEmail.text.toString()
+                newUser.firstName = layout.editTextFirstName.text.toString()
+                newUser.lastName = layout.editTextLastName.text.toString()
+                newUser.loginCount = 1
+
+
+
                 registerViewModel.register(
                     layout.editTextEmail.text.toString(),
-                    layout.editTextPassword.text.toString()
+                    layout.editTextPassword.text.toString(),
+                    newUser
+
                 )
             }
 
@@ -152,6 +163,22 @@ class GolfPoiRegisterFragment : Fragment() {
     // Validate the registration form is completed
     private fun validateForm(): Boolean {
         var valid = true
+
+        val firstName =  fragBinding.editTextFirstName.text.toString()
+        if (TextUtils.isEmpty(firstName)) {
+            fragBinding.editTextFirstName.error = "Required."
+            valid = false
+        } else {
+            fragBinding.editTextFirstName.error = null
+        }
+
+        val lastName =  fragBinding.editTextLastName.text.toString()
+        if (TextUtils.isEmpty(lastName)) {
+            fragBinding.editTextLastName.error = "Required."
+            valid = false
+        } else {
+            fragBinding.editTextLastName.error = null
+        }
 
         val email = fragBinding.editTextEmail.text.toString()
         if (TextUtils.isEmpty(email)) {
