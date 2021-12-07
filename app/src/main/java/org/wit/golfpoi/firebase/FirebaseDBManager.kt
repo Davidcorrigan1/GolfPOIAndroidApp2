@@ -15,7 +15,20 @@ object FirebaseDBManager : GolfPOIStoreInterface {
     }
 
     override fun createPOI(golfPOI: GolfPOIModel2) {
-        TODO("Not yet implemented")
+
+        val uid = database.collection("tmp").document().id
+        golfPOI.uid = uid
+
+        val golfPOIMap = golfPOI.toMap()
+        database.collection("golfPOIs")
+            .document(uid)
+            .set(golfPOIMap)
+            .addOnSuccessListener {
+                i( "Added a new POI")
+            }
+            .addOnFailureListener {
+                i("Error adding a new POI  ")
+            }
     }
 
     override fun updatePOI(golfPOI: GolfPOIModel2) {

@@ -13,6 +13,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.NavigationUI
@@ -36,8 +37,10 @@ import org.wit.golfpoi.helpers.createDefaultLocationRequest
 import org.wit.golfpoi.helpers.showImagePicker
 import org.wit.golfpoi.main.MainApp
 import org.wit.golfpoi.models.GolfPOIModel
+import org.wit.golfpoi.models.GolfPOIModel2
 import org.wit.golfpoi.models.Location
 import org.wit.golfpoi.ui.auth.LoginViewModel
+import org.wit.golfpoi.ui.register.RegisterViewModel
 import timber.log.Timber.i
 
 
@@ -45,6 +48,7 @@ import timber.log.Timber.i
 class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerClickListener {
     var golfPOI: GolfPOIModel = GolfPOIModel()
     lateinit var app: MainApp
+    private lateinit var golfPoiFragmentViewModel: GolfPoiFragmentViewModel
     private lateinit var imageIntentLauncher : ActivityResultLauncher<Intent>
     private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
     private var _fragBinding: FragmentGolfPoiBinding? = null
@@ -74,6 +78,9 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
         // Inflate the layout for this fragment
         _fragBinding = FragmentGolfPoiBinding.inflate(inflater, container, false)
         val root = fragBinding.root
+
+        golfPoiFragmentViewModel = ViewModelProvider(activity as AppCompatActivity).get(GolfPoiFragmentViewModel::class.java)
+
 
         //val golfPOI = arguments as GolfPOIModel
         val golfPOIBundle = arguments
@@ -363,6 +370,15 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
                 app.golfPOIData.updatePOI(golfPOI.copy())
             } else {
                 app.golfPOIData.createPOI(golfPOI.copy())
+                val golfPOI2 = GolfPOIModel2()
+                golfPOI2.courseTitle = golfPOI.courseTitle
+                golfPOI2.courseDescription = golfPOI.courseDescription
+                golfPOI2.courseProvince = golfPOI.courseProvince
+                golfPOI2.coursePar = golfPOI2.coursePar
+                golfPOI2.lat = golfPOI.lat
+                golfPOI2.lng = golfPOI.lng
+                golfPOI2.createdById = loginViewModel.liveFirebaseUser.value!!.uid
+                golfPoiFragmentViewModel.createPOI(golfPOI2)
             }
             val navController = view?.findNavController()
             navController?.navigate(R.id.action_golfPoiFragment_to_golfPoiListFragment)

@@ -54,6 +54,9 @@ class FirebaseAuthManager(application: Application) {
                     liveFirebaseUser.postValue(firebaseAuth!!.currentUser)
                     loggedOut.postValue(false)
                     errorStatus.postValue(false)
+
+                    // update the user object with the firebase user uid
+                    // add the user to Firestone collection
                     user.uid = firebaseAuth!!.currentUser?.uid!!
                     FirebaseDBManager.createUser(user)
                 } else {
