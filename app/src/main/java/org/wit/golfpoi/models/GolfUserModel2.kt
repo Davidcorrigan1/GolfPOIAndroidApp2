@@ -10,7 +10,8 @@ data class GolfUserModel2(var uid : String = "",
                           var firstName : String = "",
                           var lastName : String = "",
                           var loginCount : Long = 0,
-                          var favorites: MutableSet<String> = mutableSetOf<String>())
+                          var favorites: List<String> = mutableListOf<String>()
+)
 
 {
     @Exclude

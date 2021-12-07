@@ -47,12 +47,13 @@ object FirebaseDBManager : GolfPOIStoreInterface {
         val userMap = user.toMap()
 
         database.collection("users")
-            .add(userMap)
-            .addOnSuccessListener { documentReference ->
-                i( "DocumentSnapshot added with ID: ${documentReference.id}")
+            .document(user.uid)
+            .set(userMap)
+            .addOnSuccessListener {
+                i( "DocumentSnapshot added with ID")
             }
-            .addOnFailureListener { e ->
-                i("Error adding document : $e")
+            .addOnFailureListener {
+                i("Error adding document ")
             }
     }
 
