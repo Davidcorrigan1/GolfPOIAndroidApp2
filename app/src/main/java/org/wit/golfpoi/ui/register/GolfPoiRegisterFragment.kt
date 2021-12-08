@@ -15,7 +15,6 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import org.wit.golfpoi.R
 import org.wit.golfpoi.databinding.FragmentGolfPoiRegisterBinding
-import org.wit.golfpoi.models.GolfUserModel
 import org.wit.golfpoi.models.GolfUserModel2
 import org.wit.golfpoi.ui.auth.GolfLoginFragment
 import org.wit.golfpoi.ui.auth.LoginViewModel

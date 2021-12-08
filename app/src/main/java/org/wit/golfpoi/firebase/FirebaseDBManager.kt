@@ -142,14 +142,14 @@ object FirebaseDBManager : GolfPOIStoreInterface {
 
     // This will retrieve from Firestone a MutableLiveData list of favourite courses of the user with uid passed in
     override fun findUsersFavouriteCourses(uid: String, golfPOIs: MutableLiveData<List<GolfPOIModel2>>) {
-        i("Finding Favorites: $uid")
+        i("Finding Favorites1: $uid")
         database.collection("users")
             .document(uid)
             .get()
             .addOnSuccessListener {
                 document -> run {
                     var favorites = mutableListOf<String>()
-                    i("Finding Favorites: ${document.data}")
+                    i("Finding Favorites2: ${document.data}")
                     if (favorites != null) {
                         favorites = document.data?.getValue("favorites") as MutableList<String>
 

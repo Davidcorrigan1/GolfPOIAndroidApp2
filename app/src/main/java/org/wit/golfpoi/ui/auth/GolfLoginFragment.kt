@@ -15,9 +15,6 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import org.wit.golfpoi.R
 import org.wit.golfpoi.databinding.FragmentGolfLoginBinding
-import org.wit.golfpoi.firebase.FirebaseDBManager
-import org.wit.golfpoi.main.MainApp
-import org.wit.golfpoi.models.GolfUserModel
 import timber.log.Timber
 import timber.log.Timber.i
 

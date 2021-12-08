@@ -9,11 +9,6 @@ import org.junit.runner.RunWith
 
 import org.junit.Assert.*
 import org.wit.golfpoi.models.GolfPOIMemStore
-import org.wit.golfpoi.models.GolfPOIModel
-import org.wit.golfpoi.models.GolfPOIStore
-import org.wit.golfpoi.models.GolfUserModel
-import timber.log.Timber
-import timber.log.Timber.i
 import java.time.LocalDate
 
 /**

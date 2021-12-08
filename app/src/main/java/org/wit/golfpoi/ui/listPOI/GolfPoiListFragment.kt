@@ -309,6 +309,8 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
             golfPoiListViewModel.finUsersCourse(firebaseUser.uid)
             golfPoiListViewModel.findFavouriteCourses(firebaseUser.uid)
 
+            loginViewModel.findUserbyEmail(loginViewModel.liveFirebaseUser.value?.email.toString())
+
             /*golfPoiListViewModel.golfPOIs.observe(viewLifecycleOwner, { golfPOIs ->
                 golfPOIs?.let {
                     var localCurrentUser = GolfUserModel2()

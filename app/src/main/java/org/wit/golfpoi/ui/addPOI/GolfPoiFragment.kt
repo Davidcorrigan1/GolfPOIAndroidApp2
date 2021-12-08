@@ -35,25 +35,24 @@ import org.wit.golfpoi.databinding.FragmentGolfPoiBinding
 import org.wit.golfpoi.helpers.checkLocationPermissions
 import org.wit.golfpoi.helpers.createDefaultLocationRequest
 import org.wit.golfpoi.helpers.showImagePicker
-import org.wit.golfpoi.main.MainApp
-import org.wit.golfpoi.models.GolfPOIModel
 import org.wit.golfpoi.models.GolfPOIModel2
 import org.wit.golfpoi.models.Location
 import org.wit.golfpoi.ui.auth.LoginViewModel
+import org.wit.golfpoi.ui.listPOI.GolfPoiListViewModel
 import org.wit.golfpoi.ui.register.RegisterViewModel
 import timber.log.Timber.i
 
 
 
 class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerClickListener {
-    var golfPOI: GolfPOIModel = GolfPOIModel()
-    lateinit var app: MainApp
+    var golfPOI: GolfPOIModel2 = GolfPOIModel2()
     private lateinit var golfPoiFragmentViewModel: GolfPoiFragmentViewModel
     private lateinit var imageIntentLauncher : ActivityResultLauncher<Intent>
     private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
     private var _fragBinding: FragmentGolfPoiBinding? = null
     private val fragBinding get() = _fragBinding!!
     private val loginViewModel : LoginViewModel by activityViewModels()
+    private val golfPoiListViewModel : GolfPoiListViewModel by activityViewModels()
     var defaultLocation = Location("Current", 52.245696, -7.139102, 13f)
     var setProvinces : String = ""
     lateinit var map: GoogleMap
@@ -63,7 +62,6 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        app = activity?.application as MainApp
 
         setHasOptionsMenu(true)
     }
@@ -168,9 +166,11 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
             return false
         } else if (item.itemId == R.id.golfPoiFavourite) {
             if (golfPOI.courseTitle.isNotEmpty()) {
-                var updatedUser = app.golfPOIData.getCurrentUser()
-                updatedUser.favorites.add(golfPOI.id)
-                app.golfPOIData.updateUser(updatedUser)
+                var updatedUser = loginViewModel.currentUserCollectionData.value
+                updatedUser?.favorites?.add(golfPOI.uid)
+                if (updatedUser != null) {
+                    golfPoiFragmentViewModel.updateUser(updatedUser)
+                }
             }
             return false
         } else {
@@ -366,23 +366,17 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
 
 
         if (golfPOI.courseTitle.isNotEmpty() && golfPOI.courseDescription.isNotEmpty()) {
-            if (app.golfPOIData.findPOI(golfPOI.id) != null) {
-                app.golfPOIData.updatePOI(golfPOI.copy())
-            } else {
-                app.golfPOIData.createPOI(golfPOI.copy())
-                val golfPOI2 = GolfPOIModel2()
-                golfPOI2.courseTitle = golfPOI.courseTitle
-                golfPOI2.courseDescription = golfPOI.courseDescription
-                golfPOI2.courseProvince = golfPOI.courseProvince
-                golfPOI2.coursePar = golfPOI2.coursePar
-                golfPOI2.lat = golfPOI.lat
-                golfPOI2.lng = golfPOI.lng
-                golfPOI2.createdById = loginViewModel.liveFirebaseUser.value!!.uid
-                golfPoiFragmentViewModel.createPOI(golfPOI2)
-            }
-            val navController = view?.findNavController()
-            navController?.navigate(R.id.action_golfPoiFragment_to_golfPoiListFragment)
-
+            golfPoiListViewModel.golfPOIs.observe(viewLifecycleOwner, { golfPOIs ->
+                golfPOIs?.let {
+                    if (golfPOIs.find { p -> p.uid == golfPOI.uid } != null) {
+                        golfPoiFragmentViewModel.updatePOI(golfPOI.copy())
+                    } else {
+                        golfPoiFragmentViewModel.createPOI(golfPOI.copy())
+                    }
+                    val navController = view?.findNavController()
+                    navController?.navigate(R.id.action_golfPoiFragment_to_golfPoiListFragment)
+                }
+            })
         } else {
             view?.let {
                 Snackbar
