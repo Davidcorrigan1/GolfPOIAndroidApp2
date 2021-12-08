@@ -2,6 +2,7 @@ package org.wit.golfpoi.models
 
 import android.net.Uri
 import android.os.Parcelable
+import androidx.core.net.toUri
 import com.google.firebase.firestore.Exclude
 import com.google.firebase.firestore.IgnoreExtraProperties
 import kotlinx.parcelize.Parcelize

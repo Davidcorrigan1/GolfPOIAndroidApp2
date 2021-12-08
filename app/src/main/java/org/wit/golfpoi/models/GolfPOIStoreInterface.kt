@@ -1,22 +1,21 @@
 package org.wit.golfpoi.models
 
+import androidx.lifecycle.MutableLiveData
+
 
 interface GolfPOIStoreInterface {
 
-    fun findAllPOIs(): List<GolfPOIModel2>
+    fun findAllPOIs(golfPOIs: MutableLiveData<List<GolfPOIModel2>>)
     fun createPOI(golfPOI: GolfPOIModel2)
     fun updatePOI(golfPOI: GolfPOIModel2)
     fun removePOI(position: Int)
     fun findPOI(position: Int): GolfPOIModel2
-    fun findPOI(id: Long): GolfPOIModel2?
-    fun findByCreatedByUserId(id: Long): List<GolfPOIModel2>
-    fun findUsersFavouriteCourses(id: Long): List<GolfPOIModel2>
+    fun findPOI(uid: String, golfPOI: MutableLiveData<GolfPOIModel2>)
+    fun findPOIByCreatedByUserId(uid: String, golfPOIs: MutableLiveData<List<GolfPOIModel2>>)
+    fun findUsersFavouriteCourses(uid: String, golfPOIs: MutableLiveData<List<GolfPOIModel2>>)
 
     fun createUser(user: GolfUserModel2)
-    fun findUser(email: String): GolfUserModel2?
+    fun findUser(email: String, user: MutableLiveData<GolfUserModel2>)
     fun updateUser(user: GolfUserModel2)
-
-    fun setCurrentUser(user: GolfUserModel2)
-    fun getCurrentUser() : GolfUserModel2
 
 }

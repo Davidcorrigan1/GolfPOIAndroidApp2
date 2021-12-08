@@ -10,7 +10,7 @@ data class GolfUserModel2(var uid : String = "",
                           var firstName : String = "",
                           var lastName : String = "",
                           var loginCount : Long = 0,
-                          var favorites: List<String> = mutableListOf<String>()
+                          var favorites: MutableList<String> = mutableListOf<String>()
 )
 
 {
@@ -25,4 +25,5 @@ data class GolfUserModel2(var uid : String = "",
             "favorites" to favorites
         )
     }
+
 }

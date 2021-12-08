@@ -15,6 +15,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import org.wit.golfpoi.R
 import org.wit.golfpoi.databinding.FragmentGolfLoginBinding
+import org.wit.golfpoi.firebase.FirebaseDBManager
 import org.wit.golfpoi.main.MainApp
 import org.wit.golfpoi.models.GolfUserModel
 import timber.log.Timber
@@ -23,14 +24,12 @@ import timber.log.Timber.i
 
 class GolfLoginFragment : Fragment() {
     private val loginViewModel : LoginViewModel by activityViewModels()
-    lateinit var app: MainApp
     private var _fragBinding: FragmentGolfLoginBinding? = null
     private val fragBinding get() = _fragBinding!!
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        app = activity?.application as MainApp
         i("Firebase - onCreate Entered")
 
         // Disable the back button here so user can't backpress to login screen
@@ -58,11 +57,14 @@ class GolfLoginFragment : Fragment() {
             if (firebaseUser != null) {
                 i("Firebase authStateLister Called")
                 i("Firebase User: ${firebaseUser.email}")
-                app.golfPOIData.findUser(firebaseUser?.email.toString())
-                    ?.let { app.golfPOIData.setCurrentUser(it) }
                 view?.post { findNavController().navigate(R.id.action_golfLoginFragment_to_golfPoiListFragment)}
             }
         }
+
+        // Check if there was an error with the registration on Firebase Auth
+        loginViewModel.firebaseAuthManager.errorStatus.observe(this, {
+                    status ->checkStatus(status)
+        })
 
         // Setting up listeners
         setLoginButtonListener(fragBinding)
@@ -107,34 +109,26 @@ class GolfLoginFragment : Fragment() {
 
             // Authentication above
             // Below is getting the user object from the DB
+            // Make call to Firebase user collection with the Firebase user email
 
-            var loggedInUser: GolfUserModel? =
-                app.golfPOIData.findUser(layout.editTextEmail.text.toString())
-
-            if (loggedInUser != null) {
-                app.golfPOIData.setCurrentUser(loggedInUser)
-                //var navController = it.findNavController()
-                //navController.navigate(R.id.action_golfLoginFragment_to_golfPoiListFragment)
-
-                // Setting the logged on user name in the NavDrawer
-                var textUserName = activity?.findViewById<TextView>(R.id.navTitleTextView)
-                if (textUserName != null) {
-                    textUserName.text =
-                        app.golfPOIData.getCurrentUser().firstName.toString() + " " +
-                                app.golfPOIData.getCurrentUser().lastName.toString()
-                }
-
-                // Setting the logged on user email in the NavDrawer
-                var textUserEmail = activity?.findViewById<TextView>(R.id.navHeaderTextView)
-                if (textUserEmail != null) {
-                    textUserEmail.text = app.golfPOIData.getCurrentUser().userEmail.toString()
-                }
-
-
-            } else {
-                i("Cannot find user: ${R.string.login_error_message}")
-                Snackbar.make(it, R.string.login_error_message, Snackbar.LENGTH_LONG).show()
+            // Setting the logged on user email in the NavDrawer
+            var textUserEmail = activity?.findViewById<TextView>(R.id.navHeaderTextView)
+            if (textUserEmail != null) {
+                textUserEmail.text = loginViewModel.liveFirebaseUser.value?.email.toString()
             }
+
+            loginViewModel.findUserbyEmail(loginViewModel.liveFirebaseUser.value?.email.toString())
+
+            var textUserName = activity?.findViewById<TextView>(R.id.navTitleTextView)
+            loginViewModel.currentUserCollectionData.observe(viewLifecycleOwner, Observer
+            { user ->
+                    if (textUserName != null) {
+                        textUserName.text = user.firstName.toString() + " " +
+                                user.lastName.toString()
+
+                    }
+            })
+
         }
     }
 
