@@ -16,11 +16,6 @@ class GolfPoiListViewModel(application: Application) : AndroidViewModel(applicat
     var currentUsersPOIs = MutableLiveData<List<GolfPOIModel2>>()
     var currentUsersFavoritePOIs = MutableLiveData<List<GolfPOIModel2>>()
 
-    //val observableGolfPOIs: LiveData<List<GolfPOIModel2>>
-    //    get() = golfPOIs
-
-
-
 
     init {
         findAllPOIs()
@@ -28,13 +23,19 @@ class GolfPoiListViewModel(application: Application) : AndroidViewModel(applicat
 
 
     fun findAllPOIs(){
-
         FirebaseDBManager.findAllPOIs(golfPOIs)
+    }
 
+    fun setOnPOIChangeListener() {
+        FirebaseDBManager.setOnChangeListenerPOIs(golfPOIs)
     }
 
     fun updateUser(user: GolfUserModel2) {
         FirebaseDBManager.updateUser(user)
+    }
+
+    fun removePOI(golfPOI: GolfPOIModel2){
+        FirebaseDBManager.removePOI(golfPOI)
     }
 
     fun findFavouriteCourses(uid: String) {

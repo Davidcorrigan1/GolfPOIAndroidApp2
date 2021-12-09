@@ -363,6 +363,9 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
         golfPOI.courseDescription = layout.golfPOIDesc.text.toString()
         golfPOI.courseProvince = setProvinces
         golfPOI.coursePar = layout.golfPOIparPicker.value
+        if (golfPOI.createdById == "") {
+            golfPOI.createdById = loginViewModel.liveFirebaseUser.value?.uid.toString()
+        }
 
 
         if (golfPOI.courseTitle.isNotEmpty() && golfPOI.courseDescription.isNotEmpty()) {

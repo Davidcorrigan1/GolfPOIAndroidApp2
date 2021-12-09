@@ -2,6 +2,9 @@ package org.wit.golfpoi.firebase
 
 import android.net.Uri
 import androidx.lifecycle.MutableLiveData
+import com.google.firebase.firestore.DocumentChange
+import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.QueryDocumentSnapshot
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
@@ -25,16 +28,7 @@ object FirebaseDBManager : GolfPOIStoreInterface {
                     i("FirebaseDB POI document: ${document.data} ")
                     i("FirebaseDB POI document uid: ${document.data.getValue("uid").toString()} ")
                     if (document != null) {
-                        localGolfPOI.uid = document.data.getValue("uid").toString()
-                        localGolfPOI.courseTitle = document.data.getValue("courseTitle").toString()
-                        localGolfPOI.courseDescription = document.data.getValue("courseDescription").toString()
-                        localGolfPOI.courseProvince = document.data.getValue("courseProvince").toString()
-                        localGolfPOI.coursePar = document.data.getValue("coursePar").toString().toInt()
-                        localGolfPOI.lat = document.data.getValue("lat") as Double
-                        localGolfPOI.lng = document.data.getValue("lng") as Double
-                        localGolfPOI.zoom = document.data.getValue("zoom").toString().toFloat()
-                        localGolfPOI.createdById = document.data.getValue("createdById").toString()
-                        //localGolfPOI.image = document.data.getValue("image") as Uri
+                        storeResultInObject(localGolfPOI, document)
                         i("FirebaseDB POI documents 123: $localGolfPOI ")
                         localGolfPOIs.add(localGolfPOI.copy())
                     }
@@ -47,6 +41,30 @@ object FirebaseDBManager : GolfPOIStoreInterface {
                 i("Error retrieveing POI data : $exception")
             }
     }
+
+    // Find all Course POIs and update the passed in MutableLiveData List passed in.
+    override fun setOnChangeListenerPOIs(golfPOIs: MutableLiveData<List<GolfPOIModel2>>) {
+
+        database.collection("golfPOIs")
+            .addSnapshotListener { documents, error ->
+                var localGolfPOIs = mutableListOf<GolfPOIModel2>()
+                var localGolfPOI = GolfPOIModel2()
+
+                if (error == null) {
+                    if (documents != null && !documents.isEmpty) {
+                       for (document in documents) {
+                           if (document != null) {
+                               storeResultInObject(localGolfPOI, document)
+                               i("FirebaseDB POI documents 123: $localGolfPOI ")
+                               localGolfPOIs.add(localGolfPOI.copy())
+                           }
+                        }
+                        golfPOIs.value = localGolfPOIs
+                    }
+                }
+            }
+    }
+
 
     // Create a New Course POI on the Firestone DB
     override fun createPOI(golfPOI: GolfPOIModel2) {
@@ -75,9 +93,13 @@ object FirebaseDBManager : GolfPOIStoreInterface {
             .set(updatePOI, SetOptions.merge())
     }
 
-
-    override fun removePOI(position: Int) {
-        TODO("Not yet implemented")
+    // Removing
+    override fun removePOI(golfPOI: GolfPOIModel2) {
+        database.collection("golfPOIs")
+            .document(golfPOI.uid)
+            .delete()
+            .addOnSuccessListener { i("successful delete") }
+            .addOnSuccessListener { i("failed to delete") }
     }
 
     override fun findPOI(position: Int): GolfPOIModel2 {
@@ -91,20 +113,12 @@ object FirebaseDBManager : GolfPOIStoreInterface {
             .get()
             .addOnSuccessListener { document ->
                 if (document != null) {
-                    localGolfPOI.uid = document.data?.getValue("uid").toString()
-                    localGolfPOI.courseTitle = document.data?.getValue("courseTitle").toString()
-                    localGolfPOI.courseDescription = document.data?.getValue("courseDescription").toString()
-                    localGolfPOI.courseProvince = document.data?.getValue("courseProvince").toString()
-                    localGolfPOI.coursePar = document.data?.getValue("coursePar").toString().toInt()
-                    localGolfPOI.lat = document.data?.getValue("lat") as Double
-                    localGolfPOI.lng = document.data!!.getValue("lng") as Double
-                    localGolfPOI.zoom = document.data!!.getValue("zoom").toString().toFloat()
-                    localGolfPOI.createdById = document.data!!.getValue("createdById").toString()
-                    //localGolfPOI.image = document.data!!.getValue("image") as Uri
+                    storeResultInObjectSingle(localGolfPOI, document)
                 }
                 golfPOI.value = localGolfPOI
             }
     }
+
 
     override fun findPOIByCreatedByUserId(uid: String, golfPOIs: MutableLiveData<List<GolfPOIModel2>>) {
 
@@ -119,16 +133,7 @@ object FirebaseDBManager : GolfPOIStoreInterface {
                     i("FirebaseDB POI by Id document: ${document.data} ")
                     i("FirebaseDB POI by Id document uid: ${document.data.getValue("uid").toString()} ")
                     if (document != null) {
-                        localGolfPOI.uid = document.data?.getValue("uid").toString()
-                        localGolfPOI.courseTitle = document.data?.getValue("courseTitle").toString()
-                        localGolfPOI.courseDescription = document.data?.getValue("courseDescription").toString()
-                        localGolfPOI.courseProvince = document.data?.getValue("courseProvince").toString()
-                        localGolfPOI.coursePar = document.data?.getValue("coursePar").toString().toInt()
-                        localGolfPOI.lat = document.data?.getValue("lat") as Double
-                        localGolfPOI.lng = document.data!!.getValue("lng") as Double
-                        localGolfPOI.zoom = document.data!!.getValue("zoom").toString().toFloat()
-                        localGolfPOI.createdById = document.data!!.getValue("createdById").toString()
-                        //localGolfPOI.image = document.data!!.getValue("image") as Uri
+                        storeResultInObject(localGolfPOI, document)
 
                         localGolfPOIs.add(localGolfPOI.copy())
                     }
@@ -163,29 +168,7 @@ object FirebaseDBManager : GolfPOIStoreInterface {
                                     run {
 
                                         if (document.data != null) {
-                                            localGolfPOI.uid =
-                                                document.data?.getValue("uid").toString()
-                                            localGolfPOI.courseTitle =
-                                                document.data?.getValue("courseTitle").toString()
-                                            localGolfPOI.courseDescription =
-                                                document.data?.getValue("courseDescription")
-                                                    .toString()
-                                            localGolfPOI.courseProvince =
-                                                document.data?.getValue("courseProvince").toString()
-                                            localGolfPOI.coursePar =
-                                                document.data?.getValue("coursePar").toString()
-                                                    .toInt()
-                                            localGolfPOI.lat =
-                                                document.data?.getValue("lat") as Double
-                                            localGolfPOI.lng =
-                                                document.data!!.getValue("lng") as Double
-                                            localGolfPOI.zoom =
-                                                document.data!!.getValue("zoom").toString()
-                                                    .toFloat()
-                                            localGolfPOI.createdById =
-                                                document.data!!.getValue("createdById").toString()
-                                            //localGolfPOI.image =
-                                            //    document.data!!.getValue("image") as Uri
+                                            storeResultInObjectSingle(localGolfPOI, document)
                                             localGolfPOIs.add(localGolfPOI.copy())
                                         }
                                     }
@@ -240,9 +223,37 @@ object FirebaseDBManager : GolfPOIStoreInterface {
     // Update a user details
     override fun updateUser(user: GolfUserModel2) {
         var updateUser = user.toMap()
-        database.collection("user")
+        database.collection("users")
             .document(user.uid)
             .set(updateUser, SetOptions.merge())
+    }
+
+    // Stores the document which is the result of the query to firebase into an Object
+    private fun storeResultInObject(localGolfPOI: GolfPOIModel2, document: QueryDocumentSnapshot) {
+        localGolfPOI.uid = document.data.getValue("uid").toString()
+        localGolfPOI.courseTitle = document.data.getValue("courseTitle").toString()
+        localGolfPOI.courseDescription = document.data.getValue("courseDescription").toString()
+        localGolfPOI.courseProvince = document.data.getValue("courseProvince").toString()
+        localGolfPOI.coursePar = document.data.getValue("coursePar").toString().toInt()
+        localGolfPOI.lat = document.data.getValue("lat") as Double
+        localGolfPOI.lng = document.data.getValue("lng") as Double
+        localGolfPOI.zoom = document.data.getValue("zoom").toString().toFloat()
+        localGolfPOI.createdById = document.data.getValue("createdById").toString()
+        //localGolfPOI.image = document.data.getValue("image") as Uri
+
+    }
+
+    private fun storeResultInObjectSingle(localGolfPOI: GolfPOIModel2, document: DocumentSnapshot) {
+        localGolfPOI.uid = document.data?.getValue("uid").toString()
+        localGolfPOI.courseTitle = document.data?.getValue("courseTitle").toString()
+        localGolfPOI.courseDescription = document.data?.getValue("courseDescription").toString()
+        localGolfPOI.courseProvince = document.data?.getValue("courseProvince").toString()
+        localGolfPOI.coursePar = document.data?.getValue("coursePar").toString().toInt()
+        localGolfPOI.lat = document.data?.getValue("lat") as Double
+        localGolfPOI.lng = document.data!!.getValue("lng") as Double
+        localGolfPOI.zoom = document.data!!.getValue("zoom").toString().toFloat()
+        localGolfPOI.createdById = document.data!!.getValue("createdById").toString()
+        //localGolfPOI.image = document.data.getValue("image") as Uri
     }
 
 

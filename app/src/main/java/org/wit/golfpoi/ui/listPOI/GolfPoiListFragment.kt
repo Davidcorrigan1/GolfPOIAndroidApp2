@@ -108,8 +108,13 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
                 // remove from the recyclerview
                 val adapter = fragBinding.recyclerView.adapter as GolfPOIAdapter
                 adapter.removeAt(viewHolder.adapterPosition)
+                i("Delete position: ${position}")
+                i("Arraysize: ${golfPoiListViewModel.golfPOIs.value}")
+                val deletePOI = golfPoiListViewModel.golfPOIs.value?.get(position)
                 // Delete from the data source
-                //app.golfPOIData.removePOI(position)
+                if (deletePOI != null) {
+                    golfPoiListViewModel.removePOI(deletePOI)
+                }
                 fragBinding.recyclerView.adapter?.notifyItemRemoved(position)
             }
         }
@@ -152,6 +157,7 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
     override fun onResume() {
         super.onResume()
         i("Firebase - onResume Entered")
+        golfPoiListViewModel.setOnPOIChangeListener()
         fragBinding.recyclerView.adapter?.notifyDataSetChanged()
     }
 
@@ -165,8 +171,8 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
 
     // Handle the click of the Add button to trigger navigation and send the data
     override fun onGolfPOIClick(golfPOI: GolfPOIModel2) {
-        //val action = GolfPoiListFragmentDirections.actionGolfPoiListFragmentToGolfPoiFragment(golfPOI)
-        //findNavController().navigate(action)
+        val action = GolfPoiListFragmentDirections.actionGolfPoiListFragmentToGolfPoiFragment(golfPOI)
+        findNavController().navigate(action)
     }
 
     // Implement the listener for the favourites button

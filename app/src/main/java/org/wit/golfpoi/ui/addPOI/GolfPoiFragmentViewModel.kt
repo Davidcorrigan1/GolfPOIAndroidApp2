@@ -10,9 +10,7 @@ import org.wit.golfpoi.models.GolfUserModel2
 class GolfPoiFragmentViewModel  (application: Application) : AndroidViewModel(application) {
 
     fun createPOI(golfPOI: GolfPOIModel2) {
-
         FirebaseDBManager.createPOI(golfPOI)
-
     }
 
     fun updateUser(user: GolfUserModel2) {
