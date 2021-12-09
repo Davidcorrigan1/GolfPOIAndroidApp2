@@ -169,7 +169,7 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
                 var updatedUser = loginViewModel.currentUserCollectionData.value
                 updatedUser?.favorites?.add(golfPOI.uid)
                 if (updatedUser != null) {
-                    golfPoiFragmentViewModel.updateUser(updatedUser)
+                    golfPoiListViewModel.updateUser(updatedUser)
                 }
             }
             return false
@@ -300,13 +300,16 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
 
         if (golfPOI.lat == 0.00 && golfPOI.lng == 0.00) {
             if (checkLocationPermissions(requireActivity())) {
+                i("getting current location")
                 doSetCurrentLocation()
             } else {
+                i("using default location")
                 golfPOI.lat = defaultLocation.lat
                 golfPOI.lng = defaultLocation.lng
                 locationUpdate(golfPOI.lat, golfPOI.lng)
             }
         } else {
+            i("getting golfPOI location")
             locationUpdate(golfPOI.lat, golfPOI.lng)
         }
     }

@@ -17,6 +17,6 @@ interface GolfPOIStoreInterface {
 
     fun createUser(user: GolfUserModel2)
     fun findUser(email: String, user: MutableLiveData<GolfUserModel2>)
-    fun updateUser(user: GolfUserModel2)
+    fun updateUser(user: GolfUserModel2, golfPOIs: MutableLiveData<List<GolfPOIModel2>>)
 
 }

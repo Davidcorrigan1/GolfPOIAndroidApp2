@@ -10,10 +10,8 @@ import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.NavigationUI
@@ -27,12 +25,10 @@ import org.wit.golfpoi.adapter.GolfPOIListener
 import org.wit.golfpoi.databinding.FragmentGolfPoiListBinding
 import org.wit.golfpoi.helpers.SwipeToDeleteCallback
 import org.wit.golfpoi.helpers.SwipeToEditCallback
-import org.wit.golfpoi.main.MainApp
 import org.wit.golfpoi.models.GolfPOIModel2
 import org.wit.golfpoi.models.GolfUserModel2
 import org.wit.golfpoi.ui.auth.LoginViewModel
 import timber.log.Timber.i
-import java.util.Observer
 
 
 class GolfPoiListFragment : Fragment(), GolfPOIListener{
@@ -79,7 +75,7 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
         if (loginViewModel.currentUserCollectionData.value != null) {
             currentUser = loginViewModel.currentUserCollectionData.value as GolfUserModel2
         } else {
-            loginViewModel.findUserbyEmail(loginViewModel.liveFirebaseUser.value?.email.toString())
+            loginViewModel.refreshCurrentUserLiveData(loginViewModel.liveFirebaseUser.value?.email.toString())
         }
 
         // Observe the List of all golfPOIs and load the screen when available
@@ -101,7 +97,7 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
 
         })
 
-
+        // This will handle the swipe to delete a course
         val swipeDeleteHandler = object : SwipeToDeleteCallback(requireContext()) {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.adapterPosition
@@ -119,15 +115,18 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
             }
         }
 
+        // This will pass trigger the update screen with a swipe
         val swipeEditHandler = object : SwipeToEditCallback(requireContext()) {
             override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
                 val position = viewHolder.adapterPosition
 
                 // Send course data to update screen
-          //      val action = GolfPoiListFragmentDirections.actionGolfPoiListFragmentToGolfPoiFragment(
-          //          app.golfPOIData.findPOI(position)
-          //      )
-          //      findNavController().navigate(action)
+                val updatePOI = golfPoiListViewModel.golfPOIs.value?.get(position)
+                if (updatePOI != null) {
+                    val action =
+                        GolfPoiListFragmentDirections.actionGolfPoiListFragmentToGolfPoiFragment(updatePOI)
+                    findNavController().navigate(action)
+                }
             }
         }
 
@@ -315,7 +314,7 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
             golfPoiListViewModel.finUsersCourse(firebaseUser.uid)
             golfPoiListViewModel.findFavouriteCourses(firebaseUser.uid)
 
-            loginViewModel.findUserbyEmail(loginViewModel.liveFirebaseUser.value?.email.toString())
+            loginViewModel.refreshCurrentUserLiveData(loginViewModel.liveFirebaseUser.value?.email.toString())
 
             /*golfPoiListViewModel.golfPOIs.observe(viewLifecycleOwner, { golfPOIs ->
                 golfPOIs?.let {

@@ -221,11 +221,14 @@ object FirebaseDBManager : GolfPOIStoreInterface {
     }
 
     // Update a user details
-    override fun updateUser(user: GolfUserModel2) {
+    override fun updateUser(user: GolfUserModel2, golfPOIs: MutableLiveData<List<GolfPOIModel2>>) {
         var updateUser = user.toMap()
         database.collection("users")
             .document(user.uid)
             .set(updateUser, SetOptions.merge())
+            .addOnSuccessListener {
+                findUsersFavouriteCourses(user.uid, golfPOIs)
+            }
     }
 
     // Stores the document which is the result of the query to firebase into an Object
@@ -239,7 +242,7 @@ object FirebaseDBManager : GolfPOIStoreInterface {
         localGolfPOI.lng = document.data.getValue("lng") as Double
         localGolfPOI.zoom = document.data.getValue("zoom").toString().toFloat()
         localGolfPOI.createdById = document.data.getValue("createdById").toString()
-        //localGolfPOI.image = document.data.getValue("image") as Uri
+        localGolfPOI.image = Uri.parse(document.data.getValue("image").toString())
 
     }
 
@@ -253,7 +256,7 @@ object FirebaseDBManager : GolfPOIStoreInterface {
         localGolfPOI.lng = document.data!!.getValue("lng") as Double
         localGolfPOI.zoom = document.data!!.getValue("zoom").toString().toFloat()
         localGolfPOI.createdById = document.data!!.getValue("createdById").toString()
-        //localGolfPOI.image = document.data.getValue("image") as Uri
+        localGolfPOI.image = Uri.parse(document.data!!.getValue("image").toString())
     }
 
 

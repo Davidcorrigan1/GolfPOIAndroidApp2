@@ -32,7 +32,7 @@ class LoginViewModel (app: Application) : AndroidViewModel(app) {
         firebaseAuthManager.removeFirebaseStateListener(listener)
     }
 
-    fun findUserbyEmail(email: String){
+    fun refreshCurrentUserLiveData(email: String){
         FirebaseDBManager.findUser(email, currentUserCollectionData)
 
     }

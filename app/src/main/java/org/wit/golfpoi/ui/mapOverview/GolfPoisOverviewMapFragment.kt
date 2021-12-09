@@ -29,6 +29,7 @@ import android.graphics.Canvas
 import androidx.core.content.ContextCompat
 import com.google.android.gms.maps.model.BitmapDescriptor
 import androidx.fragment.app.activityViewModels
+import org.wit.golfpoi.models.GolfUserModel2
 import org.wit.golfpoi.ui.auth.LoginViewModel
 import org.wit.golfpoi.ui.listPOI.GolfPoiListViewModel
 
@@ -36,6 +37,9 @@ import org.wit.golfpoi.ui.listPOI.GolfPoiListViewModel
 class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener {
     private lateinit var map: GoogleMap
     private lateinit var golfPOIs: ArrayList<GolfPOIModel2>
+    private lateinit var userFavouritesPOIs: ArrayList<GolfPOIModel2>
+    private lateinit var userCreatedPOIs: ArrayList<GolfPOIModel2>
+    private lateinit var currentUserCollection: GolfUserModel2
     private var _fragBinding: FragmentGolfPoisOverviewMapBinding? = null
     private lateinit var contentBinding: CardMapGolfpoiBinding
     private val fragBinding get() = _fragBinding!!
@@ -43,6 +47,8 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
     private var searchView: SearchView? = null
     private var showFavourites = false
     private var showUserCreated = false
+    private var currentMarkerFavorite = false
+    private var nextMarkerFavorite = false
     private val loginViewModel : LoginViewModel by activityViewModels()
     private val golfPoiListViewModel : GolfPoiListViewModel by activityViewModels()
 
@@ -60,11 +66,28 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
         _fragBinding = FragmentGolfPoisOverviewMapBinding.inflate(inflater, container, false)
         val root = fragBinding?.root
 
+        // Obverse the current full list of courses
         golfPoiListViewModel.golfPOIs.observe(viewLifecycleOwner, { pois: List<GolfPOIModel2> ->
             pois?.let {
                 golfPOIs = pois as ArrayList<GolfPOIModel2>
             }
         })
+
+        // Observe the current users favourites
+        golfPoiListViewModel.currentUsersFavoritePOIs.observe(viewLifecycleOwner, {currentUsersFavoritePOIs ->
+            userFavouritesPOIs = currentUsersFavoritePOIs as ArrayList<GolfPOIModel2>
+        })
+
+        // Observe the current user collection data
+        loginViewModel.currentUserCollectionData.observe(viewLifecycleOwner, {currentUserCollectionData ->
+            currentUserCollection = currentUserCollectionData as GolfUserModel2
+        })
+
+        //Observe the current user created POIs
+        golfPoiListViewModel.currentUsersPOIs.observe(viewLifecycleOwner, {currentUsersPOIs ->
+            userCreatedPOIs = currentUsersPOIs as ArrayList<GolfPOIModel2>
+        })
+
 
         contentBinding = CardMapGolfpoiBinding.bind(fragBinding.root)
 
@@ -143,6 +166,7 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
                 showUserCreated = false
                 val displayCourses = loadGolfPOIs(favourites = true)
                 if (displayCourses.size.equals(0)) {
+                    showFavourites = false
                     Toast.makeText(context, "No Favourites to display, showing all courses", Toast.LENGTH_LONG).show()
                     configureMap(loadGolfPOIs())
                 } else {
@@ -150,6 +174,7 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
                 }
             } else {
                 showFavourites = false
+                showUserCreated = false
                 configureMap(loadGolfPOIs())
             }
         }
@@ -158,28 +183,30 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
     // Callback for the favourites button in the Card View on Overview Map
     private fun onClickFavButtionCallback(contentBinding: CardMapGolfpoiBinding) {
         contentBinding.favoriteBtn.setOnClickListener {
-            val updatedUser = loginViewModel.currentUserCollectionData.value
-            if (updatedUser != null) {
-                if (updatedUser.favorites.contains(selectedGolfPOI.uid)) {
-                    updatedUser.favorites.remove(selectedGolfPOI.uid)
+            if (currentUserCollection != null) {
+                if (currentUserCollection.favorites.contains(selectedGolfPOI.uid)) {
+                    currentUserCollection.favorites.remove(selectedGolfPOI.uid)
                 } else {
-                    updatedUser.favorites.add(selectedGolfPOI.uid)
+                    currentUserCollection.favorites.add(selectedGolfPOI.uid)
                 }
-                golfPoiListViewModel.updateUser(updatedUser)
+                golfPoiListViewModel.updateUser(currentUserCollection)
             }
-            populateMarkerCard(selectedGolfPOI.uid)
+            nextMarkerFavorite = !currentMarkerFavorite
+
+            populateMarkerCard(selectedGolfPOI.uid, favChange = true)
+
         }
     }
 
     // Callback for click of a Marker
     override fun onMarkerClick(marker: Marker): Boolean {
         i("marker id: ${marker.tag}")
-        populateMarkerCard (marker.tag!!)
+        populateMarkerCard (marker.tag!!, favChange = false)
         return false
     }
 
     // Populate the Card for marker clicked
-    private fun populateMarkerCard (uid: Any) {
+    private fun populateMarkerCard (uid: Any, favChange: Boolean) {
         val golfPOIMarker = golfPOIs.find { golfPOI -> golfPOI.uid == uid }
         if (golfPOIMarker != null) {
             contentBinding.golfPOITitle.text = golfPOIMarker.courseTitle
@@ -188,12 +215,23 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
 
             contentBinding.golfPOIPar.text = "  Par: ${golfPOIMarker.coursePar}"
 
-            // Set the favourites icon if the course is a favourite
-            val favourites = ArrayList(golfPoiListViewModel.currentUsersFavoritePOIs.value)
-            if (favourites.find { p -> p.uid == golfPOIMarker.uid } != null) {
-                contentBinding.favoriteBtn.setImageResource(R.drawable.ic_baseline_favorite_24)
+            if (favChange) {
+                if (nextMarkerFavorite) {
+                    currentMarkerFavorite = true
+                    contentBinding.favoriteBtn.setImageResource(R.drawable.ic_baseline_favorite_24)
+                } else {
+                    currentMarkerFavorite = false
+                    contentBinding.favoriteBtn.setImageResource(R.drawable.ic_baseline_favorite_border_24)
+                }
             } else {
-                contentBinding.favoriteBtn.setImageResource(R.drawable.ic_baseline_favorite_border_24)
+                // Set the favourites icon if the course is a favourite
+                if (userFavouritesPOIs.find { p -> p.uid == golfPOIMarker.uid } != null) {
+                    currentMarkerFavorite = true
+                    contentBinding.favoriteBtn.setImageResource(R.drawable.ic_baseline_favorite_24)
+                } else {
+                    currentMarkerFavorite = false
+                    contentBinding.favoriteBtn.setImageResource(R.drawable.ic_baseline_favorite_border_24)
+                }
             }
 
             // Show default image if none available
@@ -239,6 +277,7 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
                 showFavourites = false
                 val displayCourses = loadGolfPOIs(favourites = false)
                 if (displayCourses.size.equals(0)) {
+                    showUserCreated = false
                     Toast.makeText(context, "No User courses to display, showing all courses", Toast.LENGTH_SHORT).show()
                     configureMap(loadGolfPOIs())
                 } else {
@@ -246,6 +285,7 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
                 }
             } else {
                 showUserCreated = false
+                showFavourites = false
                 configureMap(loadGolfPOIs())
             }
         }
@@ -254,14 +294,14 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
 
     // Load Golf courses function
     private fun loadGolfPOIs(): List<GolfPOIModel2> {
-        return ArrayList(golfPoiListViewModel.golfPOIs.value)
+        return golfPOIs
     }
 
 
     // Load Golf courses which match the query string entered
     private fun loadGolfPOIs(query: String) : List<GolfPOIModel2> {
         if (query != "") {
-            var allGolfCourse = ArrayList(golfPoiListViewModel.golfPOIs.value)
+            var allGolfCourse = golfPOIs
             i("allCoursesLength: ${allGolfCourse.size}")
             var searchResults = ArrayList(allGolfCourse.filter {
                     it.courseTitle.lowercase().contains(query.lowercase()) ||
@@ -271,18 +311,16 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
             })
             return searchResults
         } else {
-            return ArrayList(golfPoiListViewModel.golfPOIs.value)
+            return golfPOIs
         }
     }
 
     // Load Golf course which were created by the current user
     private fun loadGolfPOIs(favourites: Boolean) : List<GolfPOIModel2> {
         if (favourites) {
-            var favouriteCourses = ArrayList(golfPoiListViewModel.currentUsersFavoritePOIs.value)
-            return favouriteCourses
+            return userFavouritesPOIs
         } else {
-            var userFilteredCourses = ArrayList(golfPoiListViewModel.currentUsersPOIs.value)
-            return userFilteredCourses
+            return userCreatedPOIs
         }
     }
 
@@ -335,7 +373,7 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
                 val latlng = LatLng(mapGolfPOIs[0].lat, mapGolfPOIs[0].lng)
                 map.moveCamera(CameraUpdateFactory.newLatLngZoom(latlng, 12f))
             }
-            populateMarkerCard(mapGolfPOIs.last().uid)
+            populateMarkerCard(mapGolfPOIs.last().uid, favChange = false)
         } else {
             val latlng = LatLng(52.490, -6.272)
             boundsBuilder.include(latlng)

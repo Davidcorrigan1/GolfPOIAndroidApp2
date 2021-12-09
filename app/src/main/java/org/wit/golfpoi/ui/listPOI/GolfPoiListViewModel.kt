@@ -31,7 +31,7 @@ class GolfPoiListViewModel(application: Application) : AndroidViewModel(applicat
     }
 
     fun updateUser(user: GolfUserModel2) {
-        FirebaseDBManager.updateUser(user)
+        FirebaseDBManager.updateUser(user, currentUsersFavoritePOIs)
     }
 
     fun removePOI(golfPOI: GolfPOIModel2){

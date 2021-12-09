@@ -114,7 +114,7 @@ class GolfLoginFragment : Fragment() {
                 textUserEmail.text = loginViewModel.liveFirebaseUser.value?.email.toString()
             }
 
-            loginViewModel.findUserbyEmail(loginViewModel.liveFirebaseUser.value?.email.toString())
+            loginViewModel.refreshCurrentUserLiveData(loginViewModel.liveFirebaseUser.value?.email.toString())
 
             var textUserName = activity?.findViewById<TextView>(R.id.navTitleTextView)
             loginViewModel.currentUserCollectionData.observe(viewLifecycleOwner, Observer
