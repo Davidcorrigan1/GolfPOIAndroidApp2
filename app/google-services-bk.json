@@ -15,14 +15,6 @@
       },
       "oauth_client": [
         {
-          "client_id": "766624479815-1ocog8lq3hamrsfr9lq7djorl4hihjju.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "org.wit.golfpoi",
-            "certificate_hash": "82941e469cc66bb64fa743ea4f3a7ebaf7c6bea1"
-          }
-        },
-        {
           "client_id": "766624479815-6i4hqe19qo86esgmodaotsmt486h3q1p.apps.googleusercontent.com",
           "client_type": 3
         }
