@@ -7,22 +7,22 @@ import androidx.recyclerview.widget.RecyclerView
 import com.squareup.picasso.Picasso
 import org.wit.golfpoi.R
 import org.wit.golfpoi.databinding.CardGolfpoiBinding
-import org.wit.golfpoi.models.GolfPOIModel
-import org.wit.golfpoi.models.GolfUserModel
+import org.wit.golfpoi.models.GolfPOIModel2
+import org.wit.golfpoi.models.GolfUserModel2
 import timber.log.Timber.i
 
 // new interface will represent click events on the GolfPOI Card,
 // and allow us to abstract the response to this event
 interface GolfPOIListener {
-    fun onGolfPOIClick(golfPOI: GolfPOIModel)
+    fun onGolfPOIClick(golfPOI: GolfPOIModel2)
 
-    fun onGolfPOIFavButtonClick(golfPOI: GolfPOIModel)
+    fun onGolfPOIFavButtonClick(golfPOI: GolfPOIModel2)
 }
 
 
-class GolfPOIAdapter constructor(private var golfPOIs: ArrayList<GolfPOIModel>,
-                                 private var currentUser: GolfUserModel,
-                                private val listener: GolfPOIListener) :
+class GolfPOIAdapter constructor(private var golfPOIs: ArrayList<GolfPOIModel2>,
+                                 private var currentUser: GolfUserModel2,
+                                 private val listener: GolfPOIListener) :
     RecyclerView.Adapter<GolfPOIAdapter.MainHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MainHolder {
@@ -48,7 +48,7 @@ class GolfPOIAdapter constructor(private var golfPOIs: ArrayList<GolfPOIModel>,
     class MainHolder(private val binding : CardGolfpoiBinding) :
         RecyclerView.ViewHolder(binding.root) {
 
-        fun bind(golfPOI: GolfPOIModel, currentUser: GolfUserModel, listener: GolfPOIListener) {
+        fun bind(golfPOI: GolfPOIModel2, currentUser: GolfUserModel2, listener: GolfPOIListener) {
 
             // Show default image if none available
             if (golfPOI.image != null) {
@@ -64,7 +64,7 @@ class GolfPOIAdapter constructor(private var golfPOIs: ArrayList<GolfPOIModel>,
             binding.golfPOIDesc.text = golfPOI.courseDescription
             binding.golfPOIProvince.text = golfPOI.courseProvince
 
-            if (currentUser.favorites.contains(golfPOI.id)) {
+            if (currentUser.favorites.contains(golfPOI.uid)) {
                 binding.favoriteBtn.setImageResource(R.drawable.ic_baseline_favorite_24)
             } else {
                 binding.favoriteBtn.setImageResource(R.drawable.ic_baseline_favorite_border_24)
