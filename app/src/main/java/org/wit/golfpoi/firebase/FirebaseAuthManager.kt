@@ -2,8 +2,14 @@ package org.wit.golfpoi.firebase
 
 import android.app.Application
 import androidx.lifecycle.MutableLiveData
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.GoogleAuthProvider
+import org.wit.golfpoi.R
 import org.wit.golfpoi.models.GolfUserModel2
 import timber.log.Timber
 import timber.log.Timber.i
@@ -16,6 +22,7 @@ class FirebaseAuthManager(application: Application) {
     var liveFirebaseUser = MutableLiveData<FirebaseUser>()
     var loggedOut = MutableLiveData<Boolean>()
     var errorStatus = MutableLiveData<Boolean>()
+    var googleSignInClient = MutableLiveData<GoogleSignInClient>()
 
     init {
         i("Firebase Initiating FirebaseAuthManager")
@@ -29,6 +36,8 @@ class FirebaseAuthManager(application: Application) {
             loggedOut.postValue(false)
             errorStatus.postValue(false)
         }
+
+        configureGoogleSignIn()
     }
 
     fun login(email: String?, password: String?) {
@@ -65,6 +74,46 @@ class FirebaseAuthManager(application: Application) {
                 }
             })
     }
+
+    private fun configureGoogleSignIn() {
+
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(application!!.getString(R.string.default_web_client_id))
+            .requestEmail()
+            .build()
+
+        googleSignInClient.value = GoogleSignIn.getClient(application!!.applicationContext,gso)
+    }
+
+    fun firebaseAuthWithGoogle(acct: GoogleSignInAccount, googleUser: GolfUserModel2) {
+        Timber.i( "GolfPOI firebaseAuthWithGoogle:" + acct.id!!)
+
+        val credential = GoogleAuthProvider.getCredential(acct.idToken, null)
+        firebaseAuth!!.signInWithCredential(credential)
+            .addOnCompleteListener(application!!.mainExecutor) { task ->
+                if (task.isSuccessful) {
+                    // Sign in success, update with the signed-in user's information
+                    Timber.i( "signInWithCredential:success")
+                    liveFirebaseUser.postValue(firebaseAuth!!.currentUser)
+                    // update the user object with the firebase user uid
+                    // add the user to Firestone collection
+                    googleUser.uid = firebaseAuth!!.currentUser?.uid!!
+                    googleUser.userEmail = firebaseAuth!!.currentUser?.email.toString()
+                    googleUser.loginCount = 1
+                    googleUser.firstName = "TestFirname"
+                    googleUser.lastName = "TestLastname"
+                    googleUser.favorites = mutableListOf()
+                    i("Here is the new google user: $googleUser")
+                    FirebaseDBManager.createUser(googleUser)
+
+                } else {
+                    // If sign in fails, display a message to the user.
+                    Timber.i( "signInWithCredential:failure $task.exception")
+                    errorStatus.postValue(true)
+                }
+            }
+    }
+
 
     fun logOut() {
         firebaseAuth!!.signOut()

@@ -1,5 +1,8 @@
 package org.wit.golfpoi.ui.auth
 
+import android.app.Activity.RESULT_CANCELED
+import android.app.Activity.RESULT_OK
+import android.content.Intent
 import android.os.Bundle
 import android.text.TextUtils
 import androidx.fragment.app.Fragment
@@ -8,13 +11,19 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.Observer
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.common.SignInButton
+import com.google.android.gms.common.api.ApiException
 import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import org.wit.golfpoi.R
 import org.wit.golfpoi.databinding.FragmentGolfLoginBinding
+import org.wit.golfpoi.models.GolfUserModel2
 import timber.log.Timber
 import timber.log.Timber.i
 
@@ -23,6 +32,8 @@ class GolfLoginFragment : Fragment() {
     private val loginViewModel : LoginViewModel by activityViewModels()
     private var _fragBinding: FragmentGolfLoginBinding? = null
     private val fragBinding get() = _fragBinding!!
+    private lateinit var startForResult : ActivityResultLauncher<Intent>
+    var googleUser = GolfUserModel2()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,6 +57,9 @@ class GolfLoginFragment : Fragment() {
         _fragBinding = FragmentGolfLoginBinding.inflate(inflater, container, false)
         val root = fragBinding.root
 
+        fragBinding.googleSignInButton.setSize(SignInButton.SIZE_WIDE)
+        fragBinding.googleSignInButton.setColorScheme(0)
+
         i("Firebase - onCreateView Entered")
 
         // defining listener callback to check user authorisation
@@ -66,7 +80,9 @@ class GolfLoginFragment : Fragment() {
         // Setting up listeners
         setLoginButtonListener(fragBinding)
         setRegisterButtonListener(fragBinding)
+        setGoogleSigninListener(fragBinding)
         loginViewModel.addFirebaseStateListener(authStateListener)
+        setupGoogleSignInCallback()
 
         return root
 
@@ -96,6 +112,14 @@ class GolfLoginFragment : Fragment() {
             }
     }
 
+    // This is the google login button listener
+    fun setGoogleSigninListener(layout: FragmentGolfLoginBinding) {
+        layout.googleSignInButton.setOnClickListener {
+            googleSignIn()
+        }
+
+
+    }
     // This is the login Button listener which will authenicate with Firebase
     fun setLoginButtonListener(layout: FragmentGolfLoginBinding) {
 
@@ -183,6 +207,35 @@ class GolfLoginFragment : Fragment() {
         return valid
     }
 
+    private fun googleSignIn() {
+        val signInIntent = loginViewModel.firebaseAuthManager.googleSignInClient.value!!.signInIntent
+
+        startForResult.launch(signInIntent)
+    }
+
+    private fun setupGoogleSignInCallback() {
+        startForResult =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                when(result.resultCode){
+                    RESULT_OK -> {
+                        val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+                        try {
+                            // Google Sign In was successful, authenticate with Firebase
+                            val account = task.getResult(ApiException::class.java)
+                            loginViewModel.authWithGoogle(account!!, googleUser)
+                        } catch (e: ApiException) {
+                            // Google Sign In failed
+                            Timber.i( "Google sign in failed $e")
+                            Snackbar.make(requireView(), R.string.google_auth_fail, Snackbar.LENGTH_LONG).show()
+                        }
+                        Timber.i("DonationX Google Result $result.data")
+                    }
+                    RESULT_CANCELED -> {
+
+                    } else -> { }
+                }
+            }
+    }
 
 
 }

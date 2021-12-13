@@ -23,6 +23,7 @@ import org.wit.golfpoi.R
 import org.wit.golfpoi.adapter.GolfPOIAdapter
 import org.wit.golfpoi.adapter.GolfPOIListener
 import org.wit.golfpoi.databinding.FragmentGolfPoiListBinding
+import org.wit.golfpoi.firebase.FirebaseAuthManager
 import org.wit.golfpoi.helpers.SwipeToDeleteCallback
 import org.wit.golfpoi.helpers.SwipeToEditCallback
 import org.wit.golfpoi.models.GolfPOIModel2
@@ -70,7 +71,7 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
         fragBinding.recyclerView.setLayoutManager(LinearLayoutManager(activity))
 
 
-        // Check if the currentUserCollectionData is null and if it is then triger it's
+        // Check if the currentUserCollectionData is null and if it is then trigger it's
         // creation by the findUserbyEmail method from loginViewModel.
         if (loginViewModel.currentUserCollectionData.value != null) {
             currentUser = loginViewModel.currentUserCollectionData.value as GolfUserModel2
@@ -309,6 +310,7 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
     val authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
         val firebaseUser = firebaseAuth.currentUser
         if (firebaseUser != null) {
+
             i("Firebase authStateLister Called")
             i("Firebase User: ${firebaseUser.email}")
             golfPoiListViewModel.finUsersCourse(firebaseUser.uid)

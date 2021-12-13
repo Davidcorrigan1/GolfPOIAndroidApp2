@@ -2,7 +2,6 @@ package org.wit.golfpoi.firebase
 
 import android.net.Uri
 import androidx.lifecycle.MutableLiveData
-import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.QueryDocumentSnapshot
 import com.google.firebase.firestore.SetOptions
@@ -148,6 +147,7 @@ object FirebaseDBManager : GolfPOIStoreInterface {
     // This will retrieve from Firestone a MutableLiveData list of favourite courses of the user with uid passed in
     override fun findUsersFavouriteCourses(uid: String, golfPOIs: MutableLiveData<List<GolfPOIModel2>>) {
         i("Finding Favorites1: $uid")
+
         database.collection("users")
             .document(uid)
             .get()
@@ -183,15 +183,22 @@ object FirebaseDBManager : GolfPOIStoreInterface {
     override fun createUser(user: GolfUserModel2) {
 
         val userMap = user.toMap()
-
         database.collection("users")
-            .document(user.uid)
-            .set(userMap)
+            .whereEqualTo("userEmail", user.userEmail)
+            .get()
             .addOnSuccessListener {
-                i( "DocumentSnapshot added with ID")
-            }
-            .addOnFailureListener {
-                i("Error adding document ")
+                i("User already exists on Firestone")
+            }.addOnFailureListener {
+
+                database.collection("users")
+                    .document(user.uid)
+                    .set(userMap)
+                    .addOnSuccessListener {
+                        i("DocumentSnapshot added with ID")
+                    }
+                    .addOnFailureListener {
+                        i("Error adding document ")
+                    }
             }
     }
 

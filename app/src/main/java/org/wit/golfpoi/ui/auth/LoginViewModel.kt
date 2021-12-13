@@ -3,6 +3,7 @@ package org.wit.golfpoi.ui.auth
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import org.wit.golfpoi.firebase.FirebaseAuthManager
@@ -30,6 +31,10 @@ class LoginViewModel (app: Application) : AndroidViewModel(app) {
 
     fun removeFirebaseStateListener(listener: FirebaseAuth.AuthStateListener) {
         firebaseAuthManager.removeFirebaseStateListener(listener)
+    }
+
+    fun authWithGoogle(acct: GoogleSignInAccount, googleUser: GolfUserModel2) {
+        firebaseAuthManager.firebaseAuthWithGoogle(acct, googleUser)
     }
 
     fun refreshCurrentUserLiveData(email: String){
