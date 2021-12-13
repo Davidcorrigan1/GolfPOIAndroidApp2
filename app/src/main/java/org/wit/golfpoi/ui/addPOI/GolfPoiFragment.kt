@@ -13,6 +13,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.findNavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.ui.NavigationUI
@@ -34,22 +35,24 @@ import org.wit.golfpoi.databinding.FragmentGolfPoiBinding
 import org.wit.golfpoi.helpers.checkLocationPermissions
 import org.wit.golfpoi.helpers.createDefaultLocationRequest
 import org.wit.golfpoi.helpers.showImagePicker
-import org.wit.golfpoi.main.MainApp
-import org.wit.golfpoi.models.GolfPOIModel
+import org.wit.golfpoi.models.GolfPOIModel2
 import org.wit.golfpoi.models.Location
 import org.wit.golfpoi.ui.auth.LoginViewModel
+import org.wit.golfpoi.ui.listPOI.GolfPoiListViewModel
+import org.wit.golfpoi.ui.register.RegisterViewModel
 import timber.log.Timber.i
 
 
 
 class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerClickListener {
-    var golfPOI: GolfPOIModel = GolfPOIModel()
-    lateinit var app: MainApp
+    var golfPOI: GolfPOIModel2 = GolfPOIModel2()
+    private lateinit var golfPoiFragmentViewModel: GolfPoiFragmentViewModel
     private lateinit var imageIntentLauncher : ActivityResultLauncher<Intent>
     private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
     private var _fragBinding: FragmentGolfPoiBinding? = null
     private val fragBinding get() = _fragBinding!!
     private val loginViewModel : LoginViewModel by activityViewModels()
+    private val golfPoiListViewModel : GolfPoiListViewModel by activityViewModels()
     var defaultLocation = Location("Current", 52.245696, -7.139102, 13f)
     var setProvinces : String = ""
     lateinit var map: GoogleMap
@@ -59,7 +62,6 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        app = activity?.application as MainApp
 
         setHasOptionsMenu(true)
     }
@@ -74,6 +76,9 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
         // Inflate the layout for this fragment
         _fragBinding = FragmentGolfPoiBinding.inflate(inflater, container, false)
         val root = fragBinding.root
+
+        golfPoiFragmentViewModel = ViewModelProvider(activity as AppCompatActivity).get(GolfPoiFragmentViewModel::class.java)
+
 
         //val golfPOI = arguments as GolfPOIModel
         val golfPOIBundle = arguments
@@ -161,9 +166,11 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
             return false
         } else if (item.itemId == R.id.golfPoiFavourite) {
             if (golfPOI.courseTitle.isNotEmpty()) {
-                var updatedUser = app.golfPOIData.getCurrentUser()
-                updatedUser.favorites.add(golfPOI.id)
-                app.golfPOIData.updateUser(updatedUser)
+                var updatedUser = loginViewModel.currentUserCollectionData.value
+                updatedUser?.favorites?.add(golfPOI.uid)
+                if (updatedUser != null) {
+                    golfPoiListViewModel.updateUser(updatedUser)
+                }
             }
             return false
         } else {
@@ -293,13 +300,16 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
 
         if (golfPOI.lat == 0.00 && golfPOI.lng == 0.00) {
             if (checkLocationPermissions(requireActivity())) {
+                i("getting current location")
                 doSetCurrentLocation()
             } else {
+                i("using default location")
                 golfPOI.lat = defaultLocation.lat
                 golfPOI.lng = defaultLocation.lng
                 locationUpdate(golfPOI.lat, golfPOI.lng)
             }
         } else {
+            i("getting golfPOI location")
             locationUpdate(golfPOI.lat, golfPOI.lng)
         }
     }
@@ -356,17 +366,23 @@ class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragLi
         golfPOI.courseDescription = layout.golfPOIDesc.text.toString()
         golfPOI.courseProvince = setProvinces
         golfPOI.coursePar = layout.golfPOIparPicker.value
+        if (golfPOI.createdById == "") {
+            golfPOI.createdById = loginViewModel.liveFirebaseUser.value?.uid.toString()
+        }
 
 
         if (golfPOI.courseTitle.isNotEmpty() && golfPOI.courseDescription.isNotEmpty()) {
-            if (app.golfPOIData.findPOI(golfPOI.id) != null) {
-                app.golfPOIData.updatePOI(golfPOI.copy())
-            } else {
-                app.golfPOIData.createPOI(golfPOI.copy())
-            }
-            val navController = view?.findNavController()
-            navController?.navigate(R.id.action_golfPoiFragment_to_golfPoiListFragment)
-
+            golfPoiListViewModel.golfPOIs.observe(viewLifecycleOwner, { golfPOIs ->
+                golfPOIs?.let {
+                    if (golfPOIs.find { p -> p.uid == golfPOI.uid } != null) {
+                        golfPoiFragmentViewModel.updatePOI(golfPOI.copy())
+                    } else {
+                        golfPoiFragmentViewModel.createPOI(golfPOI.copy())
+                    }
+                    val navController = view?.findNavController()
+                    navController?.navigate(R.id.action_golfPoiFragment_to_golfPoiListFragment)
+                }
+            })
         } else {
             view?.let {
                 Snackbar
