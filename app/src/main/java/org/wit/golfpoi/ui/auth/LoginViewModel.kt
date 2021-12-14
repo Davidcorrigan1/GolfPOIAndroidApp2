@@ -10,6 +10,7 @@ import org.wit.golfpoi.firebase.FirebaseAuthManager
 import org.wit.golfpoi.firebase.FirebaseDBManager
 import org.wit.golfpoi.models.GolfUserModel2
 import timber.log.Timber
+import timber.log.Timber.i
 
 class LoginViewModel (app: Application) : AndroidViewModel(app) {
 
@@ -23,6 +24,8 @@ class LoginViewModel (app: Application) : AndroidViewModel(app) {
 
     fun logOut() {
         firebaseAuthManager.logOut()
+        currentUserCollectionData = MutableLiveData<GolfUserModel2>()
+        i("Firebase : CurrentUserCollection after logout: ${currentUserCollectionData.value}")
     }
 
     fun addFirebaseStateListener(listener: FirebaseAuth.AuthStateListener){

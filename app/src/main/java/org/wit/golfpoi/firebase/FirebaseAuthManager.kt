@@ -100,10 +100,10 @@ class FirebaseAuthManager(application: Application) {
                     googleUser.uid = firebaseAuth!!.currentUser?.uid!!
                     googleUser.userEmail = firebaseAuth!!.currentUser?.email.toString()
                     googleUser.loginCount = 1
-                    googleUser.firstName = "TestFirname"
-                    googleUser.lastName = "TestLastname"
+                    googleUser.firstName = acct.givenName
+                    googleUser.lastName = acct.familyName
                     googleUser.favorites = mutableListOf()
-                    i("Here is the new google user: $googleUser")
+                    i("Firebase Here is the new google user: $googleUser")
                     FirebaseDBManager.createUser(googleUser)
 
                 } else {

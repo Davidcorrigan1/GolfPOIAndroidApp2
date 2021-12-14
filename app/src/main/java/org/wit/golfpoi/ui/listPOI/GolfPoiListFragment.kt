@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.*
 import android.widget.SearchView
+import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.activity.result.ActivityResultLauncher
@@ -73,9 +74,9 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
 
         // Check if the currentUserCollectionData is null and if it is then trigger it's
         // creation by the findUserbyEmail method from loginViewModel.
-        if (loginViewModel.currentUserCollectionData.value != null) {
-            currentUser = loginViewModel.currentUserCollectionData.value as GolfUserModel2
-        } else {
+        if (loginViewModel.currentUserCollectionData.value == null) {
+       //     currentUser = loginViewModel.currentUserCollectionData.value as GolfUserModel2
+       // } else {
             loginViewModel.refreshCurrentUserLiveData(loginViewModel.liveFirebaseUser.value?.email.toString())
         }
 
@@ -85,7 +86,7 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
                 var localCurrentUser: GolfUserModel2
                 loginViewModel.currentUserCollectionData.observe(viewLifecycleOwner, { currentUserCollectionData ->
                     localCurrentUser = loginViewModel.currentUserCollectionData.value!!
-                    i("Firebase loadGolfPOIs call 1: $golfPOIs")
+                    i("Firebase loadGolfPOIs call 1: $golfPOIs and user $localCurrentUser")
                     loadGolfPOIs(ArrayList(golfPOIs), localCurrentUser)
                 })
 
@@ -97,6 +98,25 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
             currentUser = currentUserCollectionData.copy()
 
         })
+
+        // Obsercve favorites changing
+        golfPoiListViewModel.currentUsersFavoritePOIs.observe(viewLifecycleOwner,
+            { currentUsersFavoritePOIs ->
+                loadGolfPOIs(ArrayList(golfPoiListViewModel.golfPOIs.value), currentUser)
+            }
+        )
+
+        // Updating the Nav Draer Name with the Current users Name
+        var textUserName = activity?.findViewById<TextView>(R.id.navTitleTextView)
+        loginViewModel.currentUserCollectionData.observe(viewLifecycleOwner,
+        { user ->
+            if (textUserName != null) {
+                textUserName.text = user.firstName.toString() + " " +
+                        user.lastName.toString()
+
+            }
+        })
+
 
         // This will handle the swipe to delete a course
         val swipeDeleteHandler = object : SwipeToDeleteCallback(requireContext()) {
@@ -310,21 +330,13 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
     val authStateListener = FirebaseAuth.AuthStateListener { firebaseAuth ->
         val firebaseUser = firebaseAuth.currentUser
         if (firebaseUser != null) {
-
             i("Firebase authStateLister Called")
             i("Firebase User: ${firebaseUser.email}")
             golfPoiListViewModel.finUsersCourse(firebaseUser.uid)
             golfPoiListViewModel.findFavouriteCourses(firebaseUser.uid)
 
-            loginViewModel.refreshCurrentUserLiveData(loginViewModel.liveFirebaseUser.value?.email.toString())
+            loginViewModel.refreshCurrentUserLiveData(firebaseUser.email.toString())
 
-            /*golfPoiListViewModel.golfPOIs.observe(viewLifecycleOwner, { golfPOIs ->
-                golfPOIs?.let {
-                    var localCurrentUser = GolfUserModel2()
-                    localCurrentUser = loginViewModel.currentUserCollectionData.value!!
-                    loadGolfPOIs(ArrayList(golfPOIs), localCurrentUser)
-                }
-            })*/
 
         } else {
             view?.post { findNavController().navigate(R.id.action_golfPoiListFragment_to_golfLoginFragment)}

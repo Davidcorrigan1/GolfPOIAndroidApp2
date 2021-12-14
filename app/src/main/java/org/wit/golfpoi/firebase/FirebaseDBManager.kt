@@ -37,7 +37,7 @@ object FirebaseDBManager : GolfPOIStoreInterface {
 
             }
             .addOnFailureListener { exception ->
-                i("Error retrieveing POI data : $exception")
+                i("Firebase Error retrieveing POI data : $exception")
             }
     }
 
@@ -76,10 +76,10 @@ object FirebaseDBManager : GolfPOIStoreInterface {
             .document(uid)
             .set(golfPOIMap)
             .addOnSuccessListener {
-                i( "Added a new POI")
+                i( "Firebase Added a new POI")
             }
             .addOnFailureListener {
-                i("Error adding a new POI  ")
+                i("Firebase Error adding a new POI  ")
             }
     }
 
@@ -97,8 +97,8 @@ object FirebaseDBManager : GolfPOIStoreInterface {
         database.collection("golfPOIs")
             .document(golfPOI.uid)
             .delete()
-            .addOnSuccessListener { i("successful delete") }
-            .addOnSuccessListener { i("failed to delete") }
+            .addOnSuccessListener { i("Firebase successful delete") }
+            .addOnSuccessListener { i("Firebase failed to delete") }
     }
 
     override fun findPOI(position: Int): GolfPOIModel2 {
@@ -146,7 +146,7 @@ object FirebaseDBManager : GolfPOIStoreInterface {
 
     // This will retrieve from Firestone a MutableLiveData list of favourite courses of the user with uid passed in
     override fun findUsersFavouriteCourses(uid: String, golfPOIs: MutableLiveData<List<GolfPOIModel2>>) {
-        i("Finding Favorites1: $uid")
+        i("Firebase Finding Favorites1: $uid")
 
         database.collection("users")
             .document(uid)
@@ -154,8 +154,8 @@ object FirebaseDBManager : GolfPOIStoreInterface {
             .addOnSuccessListener {
                 document -> run {
                     var favorites = mutableListOf<String>()
-                    i("Finding Favorites2: ${document.data}")
-                    if (favorites != null) {
+                    i("Firebase Finding Favorites2: ${document.data}")
+                    if (document.data != null) {
                         favorites = document.data?.getValue("favorites") as MutableList<String>
 
                         var localGolfPOIs = mutableListOf<GolfPOIModel2>()
@@ -181,24 +181,21 @@ object FirebaseDBManager : GolfPOIStoreInterface {
     }
 
     override fun createUser(user: GolfUserModel2) {
-
-        val userMap = user.toMap()
+        i("Firebase Checking Google user exists first: ${user.userEmail}")
         database.collection("users")
             .whereEqualTo("userEmail", user.userEmail)
             .get()
             .addOnSuccessListener {
-                i("User already exists on Firestone")
+                        documents -> run {
+                    i("Firebase : Does User already exists on Firestone?")
+                    if(documents.isEmpty){
+                        addUserToFirestone(user)
+                    } else {
+                        i("Firebase : User does not exists on Firestone")
+                    }
+                }
             }.addOnFailureListener {
-
-                database.collection("users")
-                    .document(user.uid)
-                    .set(userMap)
-                    .addOnSuccessListener {
-                        i("DocumentSnapshot added with ID")
-                    }
-                    .addOnFailureListener {
-                        i("Error adding document ")
-                    }
+                addUserToFirestone(user)
             }
     }
 
@@ -229,6 +226,7 @@ object FirebaseDBManager : GolfPOIStoreInterface {
 
     // Update a user details
     override fun updateUser(user: GolfUserModel2, golfPOIs: MutableLiveData<List<GolfPOIModel2>>) {
+        i("Firebase user being update : $user")
         var updateUser = user.toMap()
         database.collection("users")
             .document(user.uid)
@@ -264,6 +262,19 @@ object FirebaseDBManager : GolfPOIStoreInterface {
         localGolfPOI.zoom = document.data!!.getValue("zoom").toString().toFloat()
         localGolfPOI.createdById = document.data!!.getValue("createdById").toString()
         localGolfPOI.image = Uri.parse(document.data!!.getValue("image").toString())
+    }
+
+    private fun addUserToFirestone(user: GolfUserModel2) {
+        var userMap = user.toMap()
+        database.collection("users")
+            .document(user.uid)
+            .set(userMap)
+            .addOnSuccessListener {
+                i("Firebase DocumentSnapshot added with ID")
+            }
+            .addOnFailureListener {
+                i("Firebase Error adding document ")
+            }
     }
 
 
