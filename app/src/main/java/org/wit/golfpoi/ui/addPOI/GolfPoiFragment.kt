@@ -36,6 +36,7 @@ import org.wit.golfpoi.helpers.checkLocationPermissions
 import org.wit.golfpoi.helpers.createDefaultLocationRequest
 import org.wit.golfpoi.helpers.showImagePicker
 import org.wit.golfpoi.models.GolfPOIModel2
+import org.wit.golfpoi.models.GolfUserModel2
 import org.wit.golfpoi.models.Location
 import org.wit.golfpoi.ui.auth.LoginViewModel
 import org.wit.golfpoi.ui.listPOI.GolfPoiListViewModel
