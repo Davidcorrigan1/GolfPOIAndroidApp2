@@ -102,7 +102,11 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
         // Obsercve favorites changing
         golfPoiListViewModel.currentUsersFavoritePOIs.observe(viewLifecycleOwner,
             { currentUsersFavoritePOIs ->
-                loadGolfPOIs(ArrayList(golfPoiListViewModel.golfPOIs.value), currentUser)
+                loginViewModel.currentUserCollectionData.value?.let {
+                    loadGolfPOIs(ArrayList(golfPoiListViewModel.golfPOIs.value),
+                        it
+                    )
+                }
             }
         )
 
