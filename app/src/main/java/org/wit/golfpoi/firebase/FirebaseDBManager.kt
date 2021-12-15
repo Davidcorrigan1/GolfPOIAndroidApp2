@@ -1,5 +1,7 @@
 package org.wit.golfpoi.firebase
 
+import android.app.Application
+import android.graphics.Bitmap
 import android.net.Uri
 import androidx.lifecycle.MutableLiveData
 import com.google.firebase.firestore.DocumentSnapshot
@@ -7,13 +9,19 @@ import com.google.firebase.firestore.QueryDocumentSnapshot
 import com.google.firebase.firestore.SetOptions
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.FirebaseStorage
+import com.google.firebase.storage.StorageReference
+import org.wit.golfpoi.helpers.readImageFromPath
 import org.wit.golfpoi.models.*
 import timber.log.Timber.i
+import java.io.ByteArrayOutputStream
+import java.io.File
 
-object FirebaseDBManager : GolfPOIStoreInterface {
+class FirebaseDBManager(application: Application) : GolfPOIStoreInterface {
 
     private val database = Firebase.firestore
-
+    private var st: StorageReference = FirebaseStorage.getInstance().reference
+    private var context = application.applicationContext
 
     // Find all Course POIs and update the passed in MutableLiveData List passed in.
     override fun findAllPOIs(golfPOIs: MutableLiveData<List<GolfPOIModel2>>) {
@@ -77,6 +85,9 @@ object FirebaseDBManager : GolfPOIStoreInterface {
             .set(golfPOIMap)
             .addOnSuccessListener {
                 i( "Firebase Added a new POI")
+                if (golfPOI.image != Uri.EMPTY) {
+                    updateImage(golfPOI)
+                }
             }
             .addOnFailureListener {
                 i("Firebase Error adding a new POI  ")
@@ -90,6 +101,12 @@ object FirebaseDBManager : GolfPOIStoreInterface {
         database.collection("golfPOIs")
             .document(golfPOI.uid)
             .set(updatePOI, SetOptions.merge())
+            .addOnSuccessListener {
+                if (golfPOI.image != Uri.EMPTY) {
+                    updateImage(golfPOI)
+                }
+            }
+
     }
 
     // Removing
@@ -118,7 +135,7 @@ object FirebaseDBManager : GolfPOIStoreInterface {
             }
     }
 
-
+    // Find all the courses which were created on the system by a user. Retrived into a mutable Livedata list
     override fun findPOIByCreatedByUserId(uid: String, golfPOIs: MutableLiveData<List<GolfPOIModel2>>) {
 
         database.collection("golfPOIs")
@@ -180,6 +197,7 @@ object FirebaseDBManager : GolfPOIStoreInterface {
         }
     }
 
+    // This method will create a new user on the Firestone DB in the 'users' collection
     override fun createUser(user: GolfUserModel2) {
         i("Firebase Checking Google user exists first: ${user.userEmail}")
         database.collection("users")
@@ -199,6 +217,7 @@ object FirebaseDBManager : GolfPOIStoreInterface {
             }
     }
 
+    // This will search the 'users' collection by userEmail returning a user into livedata object
     override fun findUser(email: String, user: MutableLiveData<GolfUserModel2>){
         database.collection("users")
             .whereEqualTo("userEmail", email)
@@ -224,7 +243,7 @@ object FirebaseDBManager : GolfPOIStoreInterface {
             }
     }
 
-    // Update a user details
+    // Update a user details in FireStone 'users' collection
     override fun updateUser(user: GolfUserModel2, golfPOIs: MutableLiveData<List<GolfPOIModel2>>) {
         i("Firebase user being update : $user")
         var updateUser = user.toMap()
@@ -234,6 +253,34 @@ object FirebaseDBManager : GolfPOIStoreInterface {
             .addOnSuccessListener {
                 findUsersFavouriteCourses(user.uid, golfPOIs)
             }
+    }
+
+    // Update image in the Firebase Storage and update the golfPOI image field with location
+    fun updateImage(golfPOI: GolfPOIModel2) {
+        if (golfPOI.image != Uri.EMPTY) {
+            var imageString = golfPOI.image.toString()
+            val fileName = File(imageString)
+            val imageName = fileName.getName()
+
+            var imageRef = st.child(golfPOI.uid + '/' + imageName)
+            val baos = ByteArrayOutputStream()
+            val bitmap = readImageFromPath(context, imageString)
+
+            bitmap?.let {
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos)
+                val data = baos.toByteArray()
+                val uploadTask = imageRef.putBytes(data)
+                uploadTask.addOnFailureListener {
+                    println(it.message)
+                }.addOnSuccessListener { taskSnapshot ->
+                    taskSnapshot.metadata!!.reference!!.downloadUrl.addOnSuccessListener {
+                        golfPOI.image = it
+                        var updatePOI = golfPOI.toMap()
+                        database.collection("golfPOIs").document(golfPOI.uid).set(updatePOI, SetOptions.merge())
+                    }
+                }
+            }
+        }
     }
 
     // Stores the document which is the result of the query to firebase into an Object
@@ -264,6 +311,7 @@ object FirebaseDBManager : GolfPOIStoreInterface {
         localGolfPOI.image = Uri.parse(document.data!!.getValue("image").toString())
     }
 
+    // This adds a new to the Firestone 'users' collection
     private fun addUserToFirestone(user: GolfUserModel2) {
         var userMap = user.toMap()
         database.collection("users")

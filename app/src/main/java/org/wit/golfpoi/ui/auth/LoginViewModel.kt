@@ -15,6 +15,7 @@ import timber.log.Timber.i
 class LoginViewModel (app: Application) : AndroidViewModel(app) {
 
     var firebaseAuthManager : FirebaseAuthManager = FirebaseAuthManager(app)
+    var firebaseDBManager: FirebaseDBManager = FirebaseDBManager(app)
     var liveFirebaseUser : MutableLiveData<FirebaseUser> = firebaseAuthManager.liveFirebaseUser
     var currentUserCollectionData = MutableLiveData<GolfUserModel2>()
 
@@ -41,7 +42,7 @@ class LoginViewModel (app: Application) : AndroidViewModel(app) {
     }
 
     fun refreshCurrentUserLiveData(email: String){
-        FirebaseDBManager.findUser(email, currentUserCollectionData)
+        firebaseDBManager.findUser(email, currentUserCollectionData)
 
     }
 }

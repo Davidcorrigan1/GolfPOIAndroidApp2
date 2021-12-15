@@ -11,7 +11,7 @@ import org.wit.golfpoi.models.GolfUserModel2
 class GolfPoiListViewModel(application: Application) : AndroidViewModel(application) {
 
     lateinit var app: MainApp
-
+    var firebaseDBManager: FirebaseDBManager = FirebaseDBManager(application)
     var golfPOIs = MutableLiveData<List<GolfPOIModel2>>()
     var currentUsersPOIs = MutableLiveData<List<GolfPOIModel2>>()
     var currentUsersFavoritePOIs = MutableLiveData<List<GolfPOIModel2>>()
@@ -23,27 +23,27 @@ class GolfPoiListViewModel(application: Application) : AndroidViewModel(applicat
 
 
     fun findAllPOIs(){
-        FirebaseDBManager.findAllPOIs(golfPOIs)
+        firebaseDBManager.findAllPOIs(golfPOIs)
     }
 
     fun setOnPOIChangeListener() {
-        FirebaseDBManager.setOnChangeListenerPOIs(golfPOIs)
+        firebaseDBManager.setOnChangeListenerPOIs(golfPOIs)
     }
 
     fun updateUser(user: GolfUserModel2) {
-        FirebaseDBManager.updateUser(user, currentUsersFavoritePOIs)
+        firebaseDBManager.updateUser(user, currentUsersFavoritePOIs)
     }
 
     fun removePOI(golfPOI: GolfPOIModel2){
-        FirebaseDBManager.removePOI(golfPOI)
+        firebaseDBManager.removePOI(golfPOI)
     }
 
     fun findFavouriteCourses(uid: String) {
-        FirebaseDBManager.findUsersFavouriteCourses(uid, currentUsersFavoritePOIs)
+        firebaseDBManager.findUsersFavouriteCourses(uid, currentUsersFavoritePOIs)
     }
 
     fun finUsersCourse(uid: String) {
-        FirebaseDBManager.findPOIByCreatedByUserId(uid, currentUsersPOIs)
+        firebaseDBManager.findPOIByCreatedByUserId(uid, currentUsersPOIs)
     }
 
 }
