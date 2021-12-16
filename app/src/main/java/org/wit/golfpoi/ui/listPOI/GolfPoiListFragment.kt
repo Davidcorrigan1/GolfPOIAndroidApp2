@@ -24,11 +24,10 @@ import org.wit.golfpoi.R
 import org.wit.golfpoi.adapter.GolfPOIAdapter
 import org.wit.golfpoi.adapter.GolfPOIListener
 import org.wit.golfpoi.databinding.FragmentGolfPoiListBinding
-import org.wit.golfpoi.firebase.FirebaseAuthManager
 import org.wit.golfpoi.helpers.SwipeToDeleteCallback
 import org.wit.golfpoi.helpers.SwipeToEditCallback
-import org.wit.golfpoi.models.GolfPOIModel2
-import org.wit.golfpoi.models.GolfUserModel2
+import org.wit.golfpoi.models.GolfPOIModel
+import org.wit.golfpoi.models.GolfUserModel
 import org.wit.golfpoi.ui.auth.LoginViewModel
 import timber.log.Timber.i
 
@@ -41,7 +40,7 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
     private var _fragBinding: FragmentGolfPoiListBinding? = null
     private val fragBinding get() = _fragBinding!!
     private var searchView: SearchView? = null
-    private lateinit var currentUser: GolfUserModel2
+    private lateinit var currentUser: GolfUserModel
 
     // When the Fragment is created
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -75,7 +74,7 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
         // Check if the currentUserCollectionData is null and if it is then trigger it's
         // creation by the findUserbyEmail method from loginViewModel.
         if (loginViewModel.currentUserCollectionData.value == null) {
-       //     currentUser = loginViewModel.currentUserCollectionData.value as GolfUserModel2
+       //     currentUser = loginViewModel.currentUserCollectionData.value as GolfUserModel
        // } else {
             loginViewModel.refreshCurrentUserLiveData(loginViewModel.liveFirebaseUser.value?.email.toString())
         }
@@ -83,7 +82,7 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
         // Observe the List of all golfPOIs and load the screen when available
         golfPoiListViewModel.golfPOIs.observe(viewLifecycleOwner, { golfPOIs ->
             golfPOIs?.let {
-                var localCurrentUser: GolfUserModel2
+                var localCurrentUser: GolfUserModel
                 loginViewModel.currentUserCollectionData.observe(viewLifecycleOwner, { currentUserCollectionData ->
                     localCurrentUser = loginViewModel.currentUserCollectionData.value!!
                     i("Firebase loadGolfPOIs call 1: $golfPOIs and user $localCurrentUser")
@@ -194,13 +193,13 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
     }
 
     // Handle the click of the Add button to trigger navigation and send the data
-    override fun onGolfPOIClick(golfPOI: GolfPOIModel2) {
+    override fun onGolfPOIClick(golfPOI: GolfPOIModel) {
         val action = GolfPoiListFragmentDirections.actionGolfPoiListFragmentToGolfPoiFragment(golfPOI)
         findNavController().navigate(action)
     }
 
     // Implement the listener for the favourites button
-    override fun onGolfPOIFavButtonClick(golfPOI: GolfPOIModel2) {
+    override fun onGolfPOIFavButtonClick(golfPOI: GolfPOIModel) {
         var updatedUser = loginViewModel.currentUserCollectionData.value!!
         if (updatedUser.favorites.contains(golfPOI.uid)) {
             updatedUser.favorites.remove(golfPOI.uid)
@@ -287,7 +286,7 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
     }
 
     // Load all Golf courses function
-    private fun loadGolfPOIs(golfPOIs: ArrayList<GolfPOIModel2>, currentUser: GolfUserModel2) {
+    private fun loadGolfPOIs(golfPOIs: ArrayList<GolfPOIModel>, currentUser: GolfUserModel) {
         i("Firebase loadGolfPOIs from List: $golfPOIs")
         showGolfPOIs(golfPOIs, currentUser)
     }
@@ -324,7 +323,7 @@ class GolfPoiListFragment : Fragment(), GolfPOIListener{
     }
 
     // Bind data to adapter recycler view.
-    fun showGolfPOIs (golfPOIs: ArrayList<GolfPOIModel2>, currentUser: GolfUserModel2) {
+    fun showGolfPOIs (golfPOIs: ArrayList<GolfPOIModel>, currentUser: GolfUserModel) {
         i("Firebase showGolfPOIs : $golfPOIs")
         fragBinding.recyclerView.adapter = GolfPOIAdapter(golfPOIs, currentUser,this)
         fragBinding.recyclerView.adapter?.notifyDataSetChanged()

@@ -8,15 +8,15 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import org.wit.golfpoi.firebase.FirebaseAuthManager
 import org.wit.golfpoi.firebase.FirebaseDBManager
-import org.wit.golfpoi.models.GolfUserModel2
-import timber.log.Timber
+import org.wit.golfpoi.models.GolfUserModel
 import timber.log.Timber.i
 
 class LoginViewModel (app: Application) : AndroidViewModel(app) {
 
     var firebaseAuthManager : FirebaseAuthManager = FirebaseAuthManager(app)
+    var firebaseDBManager: FirebaseDBManager = FirebaseDBManager(app)
     var liveFirebaseUser : MutableLiveData<FirebaseUser> = firebaseAuthManager.liveFirebaseUser
-    var currentUserCollectionData = MutableLiveData<GolfUserModel2>()
+    var currentUserCollectionData = MutableLiveData<GolfUserModel>()
 
     fun login(email: String?, password: String?) {
         firebaseAuthManager.login(email, password)
@@ -24,7 +24,7 @@ class LoginViewModel (app: Application) : AndroidViewModel(app) {
 
     fun logOut() {
         firebaseAuthManager.logOut()
-        currentUserCollectionData = MutableLiveData<GolfUserModel2>()
+        currentUserCollectionData = MutableLiveData<GolfUserModel>()
         i("Firebase : CurrentUserCollection after logout: ${currentUserCollectionData.value}")
     }
 
@@ -36,12 +36,12 @@ class LoginViewModel (app: Application) : AndroidViewModel(app) {
         firebaseAuthManager.removeFirebaseStateListener(listener)
     }
 
-    fun authWithGoogle(acct: GoogleSignInAccount, googleUser: GolfUserModel2) {
+    fun authWithGoogle(acct: GoogleSignInAccount, googleUser: GolfUserModel) {
         firebaseAuthManager.firebaseAuthWithGoogle(acct, googleUser)
     }
 
     fun refreshCurrentUserLiveData(email: String){
-        FirebaseDBManager.findUser(email, currentUserCollectionData)
+        firebaseDBManager.findUser(email, currentUserCollectionData)
 
     }
 }

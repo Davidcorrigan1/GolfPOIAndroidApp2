@@ -23,7 +23,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.firebase.auth.FirebaseAuth
 import org.wit.golfpoi.R
 import org.wit.golfpoi.databinding.FragmentGolfLoginBinding
-import org.wit.golfpoi.models.GolfUserModel2
+import org.wit.golfpoi.models.GolfUserModel
 import timber.log.Timber
 import timber.log.Timber.i
 
@@ -33,7 +33,7 @@ class GolfLoginFragment : Fragment() {
     private var _fragBinding: FragmentGolfLoginBinding? = null
     private val fragBinding get() = _fragBinding!!
     private lateinit var startForResult : ActivityResultLauncher<Intent>
-    var googleUser = GolfUserModel2()
+    var googleUser = GolfUserModel()
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
