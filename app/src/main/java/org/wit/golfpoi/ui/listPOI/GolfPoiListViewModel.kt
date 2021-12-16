@@ -5,16 +5,16 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import org.wit.golfpoi.firebase.FirebaseDBManager
 import org.wit.golfpoi.main.MainApp
-import org.wit.golfpoi.models.GolfPOIModel2
-import org.wit.golfpoi.models.GolfUserModel2
+import org.wit.golfpoi.models.GolfPOIModel
+import org.wit.golfpoi.models.GolfUserModel
 
 class GolfPoiListViewModel(application: Application) : AndroidViewModel(application) {
 
     lateinit var app: MainApp
-
-    var golfPOIs = MutableLiveData<List<GolfPOIModel2>>()
-    var currentUsersPOIs = MutableLiveData<List<GolfPOIModel2>>()
-    var currentUsersFavoritePOIs = MutableLiveData<List<GolfPOIModel2>>()
+    var firebaseDBManager: FirebaseDBManager = FirebaseDBManager(application)
+    var golfPOIs = MutableLiveData<List<GolfPOIModel>>()
+    var currentUsersPOIs = MutableLiveData<List<GolfPOIModel>>()
+    var currentUsersFavoritePOIs = MutableLiveData<List<GolfPOIModel>>()
 
 
     init {
@@ -23,27 +23,27 @@ class GolfPoiListViewModel(application: Application) : AndroidViewModel(applicat
 
 
     fun findAllPOIs(){
-        FirebaseDBManager.findAllPOIs(golfPOIs)
+        firebaseDBManager.findAllPOIs(golfPOIs)
     }
 
     fun setOnPOIChangeListener() {
-        FirebaseDBManager.setOnChangeListenerPOIs(golfPOIs)
+        firebaseDBManager.setOnChangeListenerPOIs(golfPOIs)
     }
 
-    fun updateUser(user: GolfUserModel2) {
-        FirebaseDBManager.updateUser(user, currentUsersFavoritePOIs)
+    fun updateUser(user: GolfUserModel) {
+        firebaseDBManager.updateUser(user, currentUsersFavoritePOIs)
     }
 
-    fun removePOI(golfPOI: GolfPOIModel2){
-        FirebaseDBManager.removePOI(golfPOI)
+    fun removePOI(golfPOI: GolfPOIModel){
+        firebaseDBManager.removePOI(golfPOI)
     }
 
     fun findFavouriteCourses(uid: String) {
-        FirebaseDBManager.findUsersFavouriteCourses(uid, currentUsersFavoritePOIs)
+        firebaseDBManager.findUsersFavouriteCourses(uid, currentUsersFavoritePOIs)
     }
 
     fun finUsersCourse(uid: String) {
-        FirebaseDBManager.findPOIByCreatedByUserId(uid, currentUsersPOIs)
+        firebaseDBManager.findPOIByCreatedByUserId(uid, currentUsersPOIs)
     }
 
 }

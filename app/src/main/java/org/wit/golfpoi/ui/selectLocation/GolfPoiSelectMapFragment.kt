@@ -17,7 +17,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
 import org.wit.golfpoi.databinding.FragmentGolfPoiSelectMapBinding
-import org.wit.golfpoi.models.GolfPOIModel2
+import org.wit.golfpoi.models.GolfPOIModel
 import org.wit.golfpoi.models.Location
 import timber.log.Timber
 
@@ -27,7 +27,7 @@ class GolfPoiSelectMapFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMar
     private var _fragBinding: FragmentGolfPoiSelectMapBinding? = null
     private val fragBinding get() = _fragBinding!!
     var defaultLocation = Location("Current", 52.245696, -7.139102, 15f)
-    var golfPOI = GolfPOIModel2()
+    var golfPOI = GolfPOIModel()
     var location = Location()
 
     override fun onCreate(savedInstanceState: Bundle?) {

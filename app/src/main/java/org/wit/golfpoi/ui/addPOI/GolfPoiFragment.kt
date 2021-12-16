@@ -35,18 +35,16 @@ import org.wit.golfpoi.databinding.FragmentGolfPoiBinding
 import org.wit.golfpoi.helpers.checkLocationPermissions
 import org.wit.golfpoi.helpers.createDefaultLocationRequest
 import org.wit.golfpoi.helpers.showImagePicker
-import org.wit.golfpoi.models.GolfPOIModel2
-import org.wit.golfpoi.models.GolfUserModel2
+import org.wit.golfpoi.models.GolfPOIModel
 import org.wit.golfpoi.models.Location
 import org.wit.golfpoi.ui.auth.LoginViewModel
 import org.wit.golfpoi.ui.listPOI.GolfPoiListViewModel
-import org.wit.golfpoi.ui.register.RegisterViewModel
 import timber.log.Timber.i
 
 
 
 class GolfPoiFragment : Fragment(), OnMapReadyCallback, GoogleMap.OnMarkerDragListener, GoogleMap.OnMarkerClickListener {
-    var golfPOI: GolfPOIModel2 = GolfPOIModel2()
+    var golfPOI: GolfPOIModel = GolfPOIModel()
     private lateinit var golfPoiFragmentViewModel: GolfPoiFragmentViewModel
     private lateinit var imageIntentLauncher : ActivityResultLauncher<Intent>
     private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>

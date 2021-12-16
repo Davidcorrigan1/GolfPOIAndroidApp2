@@ -10,14 +10,14 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import org.wit.golfpoi.R
-import org.wit.golfpoi.models.GolfUserModel2
+import org.wit.golfpoi.models.GolfUserModel
 import timber.log.Timber
 import timber.log.Timber.i
 
 class FirebaseAuthManager(application: Application) {
 
     private var application: Application? = null
-
+    var firebaseDBManager: FirebaseDBManager = FirebaseDBManager(application)
     var firebaseAuth: FirebaseAuth? = null
     var liveFirebaseUser = MutableLiveData<FirebaseUser>()
     var loggedOut = MutableLiveData<Boolean>()
@@ -55,7 +55,7 @@ class FirebaseAuthManager(application: Application) {
             })
     }
 
-    fun register(email: String?, password: String?, user: GolfUserModel2) {
+    fun register(email: String?, password: String?, user: GolfUserModel) {
         firebaseAuth!!.createUserWithEmailAndPassword(email!!, password!!)
             .addOnCompleteListener(application!!.mainExecutor, { task ->
                 if (task.isSuccessful) {
@@ -67,7 +67,7 @@ class FirebaseAuthManager(application: Application) {
                     // update the user object with the firebase user uid
                     // add the user to Firestone collection
                     user.uid = firebaseAuth!!.currentUser?.uid!!
-                    FirebaseDBManager.createUser(user)
+                    firebaseDBManager.createUser(user)
                 } else {
                     Timber.i( "Firebase Registration Failure: $task.exception!!.message")
                     errorStatus.postValue(true)
@@ -85,7 +85,7 @@ class FirebaseAuthManager(application: Application) {
         googleSignInClient.value = GoogleSignIn.getClient(application!!.applicationContext,gso)
     }
 
-    fun firebaseAuthWithGoogle(acct: GoogleSignInAccount, googleUser: GolfUserModel2) {
+    fun firebaseAuthWithGoogle(acct: GoogleSignInAccount, googleUser: GolfUserModel) {
         Timber.i( "GolfPOI firebaseAuthWithGoogle:" + acct.id!!)
 
         val credential = GoogleAuthProvider.getCredential(acct.idToken, null)
@@ -104,7 +104,7 @@ class FirebaseAuthManager(application: Application) {
                     googleUser.lastName = acct.familyName
                     googleUser.favorites = mutableListOf()
                     i("Firebase Here is the new google user: $googleUser")
-                    FirebaseDBManager.createUser(googleUser)
+                    firebaseDBManager.createUser(googleUser)
 
                 } else {
                     // If sign in fails, display a message to the user.
