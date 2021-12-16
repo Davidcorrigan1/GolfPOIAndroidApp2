@@ -10,7 +10,7 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.auth.GoogleAuthProvider
 import org.wit.golfpoi.R
-import org.wit.golfpoi.models.GolfUserModel2
+import org.wit.golfpoi.models.GolfUserModel
 import timber.log.Timber
 import timber.log.Timber.i
 
@@ -55,7 +55,7 @@ class FirebaseAuthManager(application: Application) {
             })
     }
 
-    fun register(email: String?, password: String?, user: GolfUserModel2) {
+    fun register(email: String?, password: String?, user: GolfUserModel) {
         firebaseAuth!!.createUserWithEmailAndPassword(email!!, password!!)
             .addOnCompleteListener(application!!.mainExecutor, { task ->
                 if (task.isSuccessful) {
@@ -85,7 +85,7 @@ class FirebaseAuthManager(application: Application) {
         googleSignInClient.value = GoogleSignIn.getClient(application!!.applicationContext,gso)
     }
 
-    fun firebaseAuthWithGoogle(acct: GoogleSignInAccount, googleUser: GolfUserModel2) {
+    fun firebaseAuthWithGoogle(acct: GoogleSignInAccount, googleUser: GolfUserModel) {
         Timber.i( "GolfPOI firebaseAuthWithGoogle:" + acct.id!!)
 
         val credential = GoogleAuthProvider.getCredential(acct.idToken, null)

@@ -21,7 +21,7 @@ import com.squareup.picasso.Picasso
 import org.wit.golfpoi.R
 import org.wit.golfpoi.databinding.CardMapGolfpoiBinding
 import org.wit.golfpoi.databinding.FragmentGolfPoisOverviewMapBinding
-import org.wit.golfpoi.models.GolfPOIModel2
+import org.wit.golfpoi.models.GolfPOIModel
 import timber.log.Timber.i
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import android.graphics.Bitmap
@@ -29,21 +29,21 @@ import android.graphics.Canvas
 import androidx.core.content.ContextCompat
 import com.google.android.gms.maps.model.BitmapDescriptor
 import androidx.fragment.app.activityViewModels
-import org.wit.golfpoi.models.GolfUserModel2
+import org.wit.golfpoi.models.GolfUserModel
 import org.wit.golfpoi.ui.auth.LoginViewModel
 import org.wit.golfpoi.ui.listPOI.GolfPoiListViewModel
 
 
 class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener {
     private lateinit var map: GoogleMap
-    private lateinit var golfPOIs: ArrayList<GolfPOIModel2>
-    private lateinit var userFavouritesPOIs: ArrayList<GolfPOIModel2>
-    private lateinit var userCreatedPOIs: ArrayList<GolfPOIModel2>
-    private lateinit var currentUserCollection: GolfUserModel2
+    private lateinit var golfPOIs: ArrayList<GolfPOIModel>
+    private lateinit var userFavouritesPOIs: ArrayList<GolfPOIModel>
+    private lateinit var userCreatedPOIs: ArrayList<GolfPOIModel>
+    private lateinit var currentUserCollection: GolfUserModel
     private var _fragBinding: FragmentGolfPoisOverviewMapBinding? = null
     private lateinit var contentBinding: CardMapGolfpoiBinding
     private val fragBinding get() = _fragBinding!!
-    private lateinit var selectedGolfPOI: GolfPOIModel2
+    private lateinit var selectedGolfPOI: GolfPOIModel
     private var searchView: SearchView? = null
     private var showFavourites = false
     private var showUserCreated = false
@@ -67,25 +67,25 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
         val root = fragBinding?.root
 
         // Obverse the current full list of courses
-        golfPoiListViewModel.golfPOIs.observe(viewLifecycleOwner, { pois: List<GolfPOIModel2> ->
+        golfPoiListViewModel.golfPOIs.observe(viewLifecycleOwner, { pois: List<GolfPOIModel> ->
             pois?.let {
-                golfPOIs = pois as ArrayList<GolfPOIModel2>
+                golfPOIs = pois as ArrayList<GolfPOIModel>
             }
         })
 
         // Observe the current users favourites
         golfPoiListViewModel.currentUsersFavoritePOIs.observe(viewLifecycleOwner, {currentUsersFavoritePOIs ->
-            userFavouritesPOIs = currentUsersFavoritePOIs as ArrayList<GolfPOIModel2>
+            userFavouritesPOIs = currentUsersFavoritePOIs as ArrayList<GolfPOIModel>
         })
 
         // Observe the current user collection data
         loginViewModel.currentUserCollectionData.observe(viewLifecycleOwner, {currentUserCollectionData ->
-            currentUserCollection = currentUserCollectionData as GolfUserModel2
+            currentUserCollection = currentUserCollectionData as GolfUserModel
         })
 
         //Observe the current user created POIs
         golfPoiListViewModel.currentUsersPOIs.observe(viewLifecycleOwner, {currentUsersPOIs ->
-            userCreatedPOIs = currentUsersPOIs as ArrayList<GolfPOIModel2>
+            userCreatedPOIs = currentUsersPOIs as ArrayList<GolfPOIModel>
         })
 
 
@@ -293,13 +293,13 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
     }
 
     // Load Golf courses function
-    private fun loadGolfPOIs(): List<GolfPOIModel2> {
+    private fun loadGolfPOIs(): List<GolfPOIModel> {
         return golfPOIs
     }
 
 
     // Load Golf courses which match the query string entered
-    private fun loadGolfPOIs(query: String) : List<GolfPOIModel2> {
+    private fun loadGolfPOIs(query: String) : List<GolfPOIModel> {
         if (query != "") {
             var allGolfCourse = golfPOIs
             i("allCoursesLength: ${allGolfCourse.size}")
@@ -316,7 +316,7 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
     }
 
     // Load Golf course which were created by the current user
-    private fun loadGolfPOIs(favourites: Boolean) : List<GolfPOIModel2> {
+    private fun loadGolfPOIs(favourites: Boolean) : List<GolfPOIModel> {
         if (favourites) {
             return userFavouritesPOIs
         } else {
@@ -325,7 +325,7 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
     }
 
     // This configures the overview map based on the List of courses passed in to display
-    private fun configureMap(mapGolfPOIs: List<GolfPOIModel2>) {
+    private fun configureMap(mapGolfPOIs: List<GolfPOIModel>) {
         map.clear()
         map.setOnMarkerClickListener(this)
         map.uiSettings.isZoomControlsEnabled = true

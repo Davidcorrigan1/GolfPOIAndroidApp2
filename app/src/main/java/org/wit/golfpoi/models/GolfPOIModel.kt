@@ -9,7 +9,7 @@ import kotlinx.parcelize.Parcelize
 
 @IgnoreExtraProperties
 @Parcelize
-data class GolfPOIModel2(var uid: String = "",
+data class GolfPOIModel(var uid: String = "",
                         var courseTitle: String = "",
                         var courseDescription: String = "",
                         var courseProvince: String = "",

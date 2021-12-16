@@ -5,16 +5,16 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
 import org.wit.golfpoi.firebase.FirebaseDBManager
 import org.wit.golfpoi.main.MainApp
-import org.wit.golfpoi.models.GolfPOIModel2
-import org.wit.golfpoi.models.GolfUserModel2
+import org.wit.golfpoi.models.GolfPOIModel
+import org.wit.golfpoi.models.GolfUserModel
 
 class GolfPoiListViewModel(application: Application) : AndroidViewModel(application) {
 
     lateinit var app: MainApp
     var firebaseDBManager: FirebaseDBManager = FirebaseDBManager(application)
-    var golfPOIs = MutableLiveData<List<GolfPOIModel2>>()
-    var currentUsersPOIs = MutableLiveData<List<GolfPOIModel2>>()
-    var currentUsersFavoritePOIs = MutableLiveData<List<GolfPOIModel2>>()
+    var golfPOIs = MutableLiveData<List<GolfPOIModel>>()
+    var currentUsersPOIs = MutableLiveData<List<GolfPOIModel>>()
+    var currentUsersFavoritePOIs = MutableLiveData<List<GolfPOIModel>>()
 
 
     init {
@@ -30,11 +30,11 @@ class GolfPoiListViewModel(application: Application) : AndroidViewModel(applicat
         firebaseDBManager.setOnChangeListenerPOIs(golfPOIs)
     }
 
-    fun updateUser(user: GolfUserModel2) {
+    fun updateUser(user: GolfUserModel) {
         firebaseDBManager.updateUser(user, currentUsersFavoritePOIs)
     }
 
-    fun removePOI(golfPOI: GolfPOIModel2){
+    fun removePOI(golfPOI: GolfPOIModel){
         firebaseDBManager.removePOI(golfPOI)
     }
 
