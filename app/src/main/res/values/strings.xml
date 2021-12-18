@@ -48,4 +48,5 @@
     <string name="submit">Add to Favourites</string>
     <string name="favouriteText">Favourites</string>
     <string name="google_auth_fail">Authentication Failed</string>
+    <string name="distanceText">Within 50km</string>
 </resources>
