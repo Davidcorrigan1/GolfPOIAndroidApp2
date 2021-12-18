@@ -1,5 +1,6 @@
 package org.wit.golfpoi.ui.mapOverview
 
+import android.annotation.SuppressLint
 import android.app.SearchManager
 import android.content.Context
 import android.net.Uri
@@ -26,16 +27,25 @@ import timber.log.Timber.i
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import com.google.android.gms.maps.model.BitmapDescriptor
 import androidx.fragment.app.activityViewModels
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
+import org.wit.golfpoi.helpers.createDefaultLocationRequest
 import org.wit.golfpoi.models.GolfUserModel
+import org.wit.golfpoi.models.Location
 import org.wit.golfpoi.ui.auth.LoginViewModel
 import org.wit.golfpoi.ui.listPOI.GolfPoiListViewModel
 
 
 class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener {
     private lateinit var map: GoogleMap
+    private lateinit var requestPermissionLauncher: ActivityResultLauncher<String>
     private lateinit var golfPOIs: ArrayList<GolfPOIModel>
     private lateinit var userFavouritesPOIs: ArrayList<GolfPOIModel>
     private lateinit var userCreatedPOIs: ArrayList<GolfPOIModel>
@@ -47,10 +57,15 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
     private var searchView: SearchView? = null
     private var showFavourites = false
     private var showUserCreated = false
+    private var showDistance = false
     private var currentMarkerFavorite = false
     private var nextMarkerFavorite = false
     private val loginViewModel : LoginViewModel by activityViewModels()
     private val golfPoiListViewModel : GolfPoiListViewModel by activityViewModels()
+    var defaultLocation = Location("Current", 52.245696, -7.139102, 13f)
+    private lateinit var currentLocation: LatLng
+    lateinit var locationService: FusedLocationProviderClient
+    val locationRequest = createDefaultLocationRequest()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,10 +78,14 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+
+        // Acquire reference to the location provider client
+        locationService = LocationServices.getFusedLocationProviderClient(requireActivity())
+
         _fragBinding = FragmentGolfPoisOverviewMapBinding.inflate(inflater, container, false)
         val root = fragBinding?.root
 
-        // Obverse the current full list of courses
+        // Observe the current full list of courses
         golfPoiListViewModel.golfPOIs.observe(viewLifecycleOwner, { pois: List<GolfPOIModel> ->
             pois?.let {
                 golfPOIs = pois as ArrayList<GolfPOIModel>
@@ -104,8 +123,12 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
             map = it
             configureMap(golfPOIs)
         }
+
+        permissionLauncherCallback()
+        onDistCheckedCallback(contentBinding)
         onChipCheckedCallback(contentBinding)
         onClickFavButtionCallback(contentBinding)
+
         return root
     }
 
@@ -147,6 +170,7 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
         showUserCreated = false
         showFavourites = false
         contentBinding.mapView.onResume()
+        doRestartLocationUpdates()
     }
 
     // Back button callback
@@ -173,6 +197,33 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
                     configureMap(displayCourses)
                 }
             } else {
+                showFavourites = false
+                showUserCreated = false
+                configureMap(loadGolfPOIs())
+            }
+        }
+    }
+
+    // Callback for Distance Chip checked
+    private fun onDistCheckedCallback(layout: CardMapGolfpoiBinding) {
+        layout.chipDist.setOnCheckedChangeListener { chip, isChecked ->
+            i("Distance - Callback")
+            if (isChecked) {
+                showDistance = true
+                showFavourites = false
+                showUserCreated = false
+                i("Distance - Current Location $currentLocation")
+                val displayCourses = loadGolfPOIs(50000f, currentLocation )
+                i("Distance - within $displayCourses")
+                if (displayCourses.size.equals(0)) {
+                    showDistance = false
+                    Toast.makeText(context, "No courses within distance, showing all courses", Toast.LENGTH_LONG).show()
+                    configureMap(loadGolfPOIs())
+                } else {
+                    configureMap(displayCourses)
+                }
+            } else {
+                showDistance = false
                 showFavourites = false
                 showUserCreated = false
                 configureMap(loadGolfPOIs())
@@ -324,6 +375,97 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
         }
     }
 
+    // Load Golf Course which are within a distance of location
+    private fun loadGolfPOIs(distance: Float, fromLocation: LatLng) : List<GolfPOIModel> {
+        var location: android.location.Location = android.location.Location("Google")
+        location.latitude = fromLocation.latitude
+        location.longitude = fromLocation.longitude
+        var withDistancePOIs = mutableListOf<GolfPOIModel>()
+
+        var golfCourseLocation: android.location.Location = android.location.Location("Google")
+
+        golfPOIs.forEach {
+
+            golfCourseLocation.latitude = it.lat
+            golfCourseLocation.longitude = it.lng
+            i("Distance measuring $location and $golfCourseLocation")
+            val measuredDistance = location.distanceTo(golfCourseLocation)
+            i("Distance measured = $measuredDistance")
+            if (measuredDistance < distance) {
+                i("adding it to withDistance List")
+                withDistancePOIs.add(it)
+            }
+        }
+        return withDistancePOIs
+    }
+
+
+
+    // Callback for permission requester
+    private fun permissionLauncherCallback() {
+        i("permission check called")
+        requestPermissionLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestPermission())
+            { isGranted: Boolean ->
+                if (isGranted) {
+                    doSetCurrentLocation()
+                } else {
+                    //Current Location - last known location not found")
+                    val latlng = LatLng(defaultLocation.lat, defaultLocation.lng)
+                    currentLocation = latlng
+                    i("Distance - Set Current Location $currentLocation")
+                    map.addMarker(
+                        MarkerOptions().position(latlng).title("Current Location").icon(
+                            context?.let { bitmapDescriptorFromVector(it,R.drawable.ic_baseline_my_location_48) })
+                    )
+                }
+                i("permission check called - Callback Dist")
+
+            }
+    }
+
+    @SuppressLint("MissingPermission")
+    fun doSetCurrentLocation() {
+        //Current Location -setting location from doSetLocation")
+        locationService.lastLocation.addOnSuccessListener {
+            //Current Location lat lng in doSetCurrentListener")
+            lateinit var latlng: LatLng
+            if(it == null) {
+                //Current Location - last known location not found")
+                latlng = LatLng(defaultLocation.lat, defaultLocation.lng)
+            } else {
+                latlng = LatLng(it.latitude , it.longitude)
+            }
+            currentLocation = latlng
+            i("Distance - Set Current Location $currentLocation")
+            map.addMarker(
+                MarkerOptions().position(latlng).title("Current Location").icon(
+                    context?.let { bitmapDescriptorFromVector(it,R.drawable.ic_baseline_my_location_48) })
+            )
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    fun doRestartLocationUpdates() {
+        var locationCallback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult?) {
+                if (locationResult != null && locationResult.locations != null) {
+                    val l = locationResult.locations.last()
+                    val latlng = LatLng(l.latitude, l.longitude)
+                    currentLocation = latlng
+                    i("Distance - Set Current Location $currentLocation")
+                    map.addMarker(
+                        MarkerOptions().position(latlng).title("Current Location").icon(
+                            context?.let { bitmapDescriptorFromVector(it,R.drawable.ic_baseline_my_location_48) })
+                    )
+                }
+            }
+        }
+
+        locationService.requestLocationUpdates(locationRequest, locationCallback, null)
+
+    }
+
     // This configures the overview map based on the List of courses passed in to display
     private fun configureMap(mapGolfPOIs: List<GolfPOIModel>) {
         map.clear()
@@ -386,6 +528,7 @@ class GolfPoisOverviewMapFragment : Fragment(), GoogleMap.OnMarkerClickListener 
                 )
             )
         }
+        doRestartLocationUpdates()
     }
 
     // creating bitmap descriptor see: https://stackoverflow.com/questions/42365658/custom-marker-in-google-maps-in-android-with-vector-asset-icon
