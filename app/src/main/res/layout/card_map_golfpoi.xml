@@ -30,14 +30,28 @@
         app:layout_constraintBottom_toTopOf="@id/cardView"
         tools:ignore="SpeakableTextPresentCheck" />
 
-        <com.google.android.material.chip.Chip
-            android:id="@+id/chip"
-            android:layout_width="wrap_content"
+        <com.google.android.material.chip.ChipGroup
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/favouriteText"
-            android:textSize="18dp"
-            android:checkable="true"
-            android:textColor="@color/red"/>
+            android:padding="4dp">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/favouriteText"
+                android:textSize="18dp"
+                android:checkable="true"
+                android:textColor="@color/red"/>
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chipDist"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/distanceText"
+                android:textSize="18dp"
+                android:checkable="true"
+                android:textColor="@color/red"/>
+        </com.google.android.material.chip.ChipGroup>
     </FrameLayout>
 
     <androidx.cardview.widget.CardView
