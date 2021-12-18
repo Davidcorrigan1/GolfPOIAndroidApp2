@@ -63,7 +63,7 @@
         tools:layout="@layout/fragment_golf_poi" >
         <argument
             android:name="golfPOI"
-            app:argType="org.wit.golfpoi.models.GolfPOIModel2" />
+            app:argType="org.wit.golfpoi.models.GolfPOIModel" />
         <action
             android:id="@+id/action_golfPoiFragment_to_golfPoiListFragment"
             app:destination="@id/golfPoiListFragment"
@@ -90,7 +90,7 @@
             app:exitAnim="@anim/nav_default_exit_anim" />
         <argument
             android:name="golfPOI"
-            app:argType="org.wit.golfpoi.models.GolfPOIModel2" />
+            app:argType="org.wit.golfpoi.models.GolfPOIModel" />
     </fragment>
     <fragment
         android:id="@+id/golfPoisOverviewMapFragment"
